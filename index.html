@@ -257,6 +257,19 @@ const HORSE_LEGACY_FALLBACKS = {
   "mcl_mobitems_horse_armor_diamond.png": "mcl_mobitems_horse_armor_diamond.png"
 };
 
+// VoxeLibre's villager B3D model samples arm UVs in the lower part of
+// the 64x64 atlas. Modern Minecraft zombie-villager files leave those
+// regions transparent, so these complete target-layout fallbacks preserve
+// the arms while uploaded source pixels are composited over them.
+const EMBEDDED_ZOMBIE_VILLAGER_FALLBACKS = Object.freeze({
+  "mobs_mc_zombie_villager.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEUAAABjVUZwZ1x/eGhMPDRWRj2JgnKgmYiJLBdoAgK1qJibkIHMwrHb08Xl4NVPNitrTj3UpzX93XFJLyQ7UTRCYD0zRStGbERPd1NyIxWsAAAAAXRSTlMAQObYZgAAArxJREFUeAHUlYlyqzAMRdEVMi2FrnbJ/3/pu5btIWshyWzvYDCawYeRxNI1BKoKSN8b6fvuXlDpTYjdLxBoCAFq4tj9AgtNYPaIwLJAnxIoAR5OARm24JkiKlfb3W0UGIGIwM8oIpA2bwqQa2YCCSEbhKDtPOwS5GuJKh08XTeObUG7IQVAAGoouwVYEbJGfd+DbAoU3FT9piEMgzCAZoGZhB0CKNg0lTCQl1cK2MgstSxQ3RSUV1gRwsswvL4EUCAK9BT03HbUQD31oRC8FNlq3Dg2Be1Dsj5A8NmEUNL9r4wlg/GtcrdgEhCZ3kZnSyBmghBwIhDZLzASyNOCp1N4qIhyhJFxIuM0CyDzVKKxTjcE4IBPxjHyrnkFzKBjjeZ3Mt8QoAlwLICCowqm2Zm2BaQuQU2hRES43xAocgGhVeBwgfCWFDglup4CVOESzp6Cl2uq8MwtwPxXEc3WD3ntwvQxzx9+svpuCKAcCuEwgCn4LevK0+hmEUFaFz4+yQePX9+cS/Tz80F+fnY9SL6Gh4/vLx5K8OPcEGgYOIagHFBFrUGtfone6nRVgBBUy47MNOX25WObs69M3W1imzaRSndKatMm/tQqnhRAnxA8k4KZVMy5FMQNwfrmZlcRxERirJ4aeRgvdLl4ouo1WAXx9zfGtFSBR9T4fing4hCqpHaCK/KaJRuW1KIDWa4J6rfjiuCQBbFEaXHShQCEEiIGHKcQEwW8Z4kY0pHitSJmwWkRneQCpl1D78ulwNqrf9TGVrEuCxi2JkSOPz/AwHEbU1cFa1PTNYGWDugtQaHmcKUG60/oogaHXIOu1aCKth7liyIux4KOgj341WsXGHgTCR27BClf2gSl//nAfZ8gvwW8dCkpeBSXHNHQ7TMUCTkc/K605JJ6De4jlRcoUkDPI8QUs4DTvzGMJAAAUDU5TVKZZgMAAAAASUVORK5CYII=",
+  "mobs_mc_zombie_butcher.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAP1BMVEUAAABjVUZwZ1x/eGhMPDRWRj2JgnKgmYiJLBcZGRksLCzBUyA9PT21qJgjIyPMwrGbkIHl4NVJSUnb08VPNitM+5NNAAAAAXRSTlMAQObYZgAAAp1JREFUeAHUleGWoyAMhU0iWBmRWvb9n3VzCZxpV3uk9ddeQcjM5AMu6XRoIhYRZhpHpxrH4VNx1ehI5T4HCIv3ngX5IHwB8A3g3NcAuQBgFhXz10dgVv+vmEijAuSLayTbOhGW1qHFbTwFlBw0OCdi89rx6gCUh1k3Lh4Tag+m54C2ILMQe+a2fjeAX0SO/1FPCcMuW1WPQbBOkIrS7gCwsF6akJ+mqdSg6EUC6iGRjh3g7lHIt2ly5FkBJCgoe3pKGI4pYIJgIxGoTh9tfYXE/FRAjBHZBMjwv6p9qOeqjwGwAsbMoegMgPtn7/nZWgajF+BUXnUdcP0IX5hIT3KqujTero4EnHb3zm9t6PZHNVtEHEtlkbLwi2MANwAbgMgILd+KmxwJnwNUeP/+Q7MIBIRvAMIwkKUCWFMI3d72E8MfAgBv3cGGErAbbz+js7WJpIhOTcTIRSLjz20ECmpWvDsClWW0YbdIBgG7waRCHPFbgK3abkFH+5qCnSNZyMJKo65CCsuyBH3VZmHVIUD8pG3yog37tRRkolv+PCP9TUGz9yLWGQqWWmXzjk9EbMOp1qrhVakN54AQ1nUJFwFhuQC4coR5bulz0ccmzti+dbAMEJMqth1YFAso7nAwb12W4sEvIN7vmrFhvsUapQLeA5D8eFRIvQnN0JwEwhaTRTHrZrZ8BAjh8QjhAJA0J6caIYhZw/0Vtjpd1Y+nI5gHObYoKQqvAxMBeDURMkCqke3nCDAjF5Sna2yOWYDkSogHJrZrfD6C5aZ7rrRUCQj2gMVuYNkDUrY5ZJhhv4N5bTtYXz0AYCuY1DxQgdxRymZ6uqMO/tj695S1pDZc46kASFAGINsJ7po/DEoYegnYPc6xbTlr/vB3Iw6MAgAdWioUr61TYwAAAABJRU5ErkJggg==",
+  "mobs_mc_zombie_farmer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAUVBMVEUAAABjVUZwZ1x/eGhMPDRWRj2JgnKgmYiJLBdoAgK1qJibkIHMwrHb08Xl4NVPNivBUyAsLCw9PT3UpzX93XEZGRlZNSlmPzN3UECMZFGZdF0oior7AAAAAXRSTlMAQObYZgAAAtFJREFUeAHUkgUCGzEMBKOVJR+G8/+vdiPb5faoOMYDjfHUEKgqICkZSem0FVSSCbHtAoW6O9QksB0CbwKz3QI9IACUAG0Jf34TBUp2HGMLFAERac+tXRREzDu7A66lXwurNYJIRJUOImiJeVlQB7OUFPCIaa/M1ghQkGRmZSMafAaw5gpDVRlr5p6z8AFaN1RXCKAxfRHJOXc9BSlZSMtBrJgBhAK4dzn3nYMCUSBZSWuucCw9m2XibepiTMzrLlJEWb1AiNaEUHL6XxnKCoaxslkwCYhM4xAsCcRM4I4vBCLrBUacHBccX8KOTZTPMDJMZJhmAWSeytNQmx8IwIxojHngqO+Is9mZMeVpPpP5BwI0AT4XtKHjaZqDaVlAWsjlPF/mqT5VfiBQwB3QJijjzybCOdTHmMD3lwBVtMKY2MS3IHXXZNGbimHFJkZbFk/BtUvKTvVF+6MlMCuE2QCrY1rMpjwsHCMgIO0Uyt1LJgYZysPYWHWRbndyE1E8nuzEU+O7AvXMnF2ZoYobYxh3ez6eDzYR/3oxmvV3BXBXLQWEAgaxYvyj9V+VD72XBZbDMAwFVbqC5kv3P+jKtrpchmkDP3lvjCE7jR83F6HYFPYT9eYKgUR10IOC7e4BwSNNcKfxyc2d6BKsZbi821Qgm2ilI/YLQhABCr4EDBlpRdJJk38EAZkt6fN4AYRZQKcIZcZ/AilT+kegNEu1QEHpQn8EKiJU4NKPJrSgk5uF4L9OHIKfnTiRcu43mhX4K3AhCvmkBXLzJTAHaQoi/utEQd03QPB9GIc68ljJZSj4K2C32ex2Gxh3r66BL9FnKtyZuP3i0PdPtnd+UxwOsCnYuB8Kewru3a2rkwtfhypfJ+hWxxq5mdAcQ+waek76EEgzocLGcg2osElKM6FQEdcKIlohZyaKKLhSYCYi+ZbcjMi8UkBP50/wETKFPQJgb+EDDDNLW8hfbjUAAAAASUVORK5CYII=",
+  "mobs_mc_zombie_librarian.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAWlBMVEUAAABjVUZwZ1x/eGhMPDRWRj2JgnIsLCw9PT0ZGRmgmYiJLBdoAgK1qJibkIHMwrFbQTFJLyTb08VrTj3l4NV6XklPNivUpzX93XEzUno+Yo4pQmhNdKBXgq9md8cfAAAAAXRSTlMAQObYZgAAAwlJREFUeAHUkody6zoMRLMLka40VGIl//+lbzHgu9Xd0+4RGzSDw/rxP6CZkRiGIobh41nYGQpEeV5gtForLfJFeUFQ/xeU8rLA3hCQFql4eQskUcTLhwiaxRU+fY2gCQIkYvr/4+hlwl0BAVCFrLWgkBH2GkfygCA+RiFy9PMTdwX/T0iLazT28H/XfcFmsw2iyz7bzS4Hu0eeMM0sd4ANoYBGMp827wpo1KUZ9sFuVxGXGdIamD2wAkIC1v1hXzfHPSWAkUPJ77EnDEqQkArDWvSpPPaQyF8eUAwiX8Q7+FdpuYN26jwtcFDAT60F9wTjNI2slb8JgMcFk6jifcH7W3jhEJWbyBI0F81nkIWeUevdZcGyjGPWcE1Ns0bGZ4n8Hs2fYr4syOSsvwo88rvA54aC2a8IzstyjiqB6CkOzuvsPaIZ6ZcFmZw1BYFzFtp3UkDCb21h/LkFjzRPctROJtpVwTkKIEtI+i34Os+re0YkAL++ApWFhFagm4g5m8j5MyIzuixIZMiXsC5iVfv1rT4j/V2LrdNFATpk9pETiev3l5oMwmu4IrC6V9lXU6EZ+xn0y8jo1LuLAtZqlpWBe1xftP/1WjaorcNAEF7bOO/dIJ3R6P7XrMfbhaRRqYKhA5IYGX3sj4Gt07w84mehjoHGKcezWMevOou1rRcB63YBcCUFj2+p/dTbRdwdfi6zEgCSREWQDrDBC+6fB4f/53bMD1+zA9AaQMUhMR3Ic73kv23LcrstPh1JAtohED2ig+mgfkgjwLr6hxsABBJiuVMctNCPvXue2ysFP6EaxErBtABGRTTguYhAxAMA9V58Bex+a8puFYARjewN3QAvX8WoiNXGpxRIKsh7Q7URLTsyAGzZge0bgHIKrRwys0ENlopgeayBRbqN6RwA4TX1KxfgI+IuwnL8PDbEjACSIDvVW5qgxeAcgAXAYcpRIt8C6LEL1KlpgOX4u2gRki+kSYAEGtAo2BHqEex9DkA6d3XvRFZB9IdpgHdVvuYwHecAbXDV6tNf6BPFgVYZJoYxpQAAAABJRU5ErkJggg==",
+  "mobs_mc_zombie_priest.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEUAAAA/M1lNPGhMPDRWRj1gSHxjVUZzUYyGXpl/eGhwZ1ygmYiJgnKJLBdoAgK1qJibkIHMwrHb08Xl4NVPNitrTj3UpzX93XFJLyRayRhOAAAAAXRSTlMAQObYZgAAAtRJREFUeAHUloeWszoMhIORm+ItJvX9n/SOZHmrc2HDaf9Q5OFEH0hKO3RNk4OmaZ4JmufDXzU57z0IMwWI/g5AfozROQoqegIQU4peAETPAdJeQET+jhImF+OOJu4Yo/Mq9yiuAryMz+s5JVvN5EXqNj96u6WuZsK5X9/4BvIyBEgWaIKWEKENJfSxPYqrgMzYcubjsRxD4KAmM3PIpZTAqwDOjKEB8PIKxlw4Y5ACLaKcNzwBBwGU1xfkN0DAxZnatgpgziiVuRTJDzMzrFAJG/ZVQCuag8Q5QKwXJDsI5PCv6q1V8PZu+jOgBoZCfX9TrQGWWheMgb8BQtgOqFCBdgN2l/BUE99+qkJvdQnMYanNvVkYA2qXvRp3lYwT0QmmueUELWMAnh77ogGxAwRGRM3huqgOAUHErIG+pBDE1ZxpDODM0kAEA4gqsnnR8tXqA4xL4Jy5HySN1z5UZq5tpZRW3IMSWEtA0Ng6SYyUMxadovFRCdgzBymBGSVIfh+cuv8fo9yVIYlSwvkCnXG+3iSqu9/P0P0+BnwRQZqD0/l2xamZe9MYkMsR+7Fk7FKKvROt+829WxgCWL6728Gi9q6Sc4/Ca+HwWK6HVQXTj8u+h1XpyDPvBHDeAdhTAlEwkeo3wK0A9PH1EFYD2B8T45hT637hpHkhZ+3BJ0D/3lx1Ha/NASPHAIDkUgxik7C/Q7JMN2cuRg8/ArTvjgEgYnmLBvDRD1saGAIECsT8tQTkoALvutNcN2qiAL43UeV90v+Maqz++BtA/aP/ZYz2agU4ABSilwdT6GP8VoKHENLXMcIDMQDkNoH8HaApSY05aPQ+oM/vz2EPvloZi1t/K38HRBxmoaiAdemrGyDFFMXARSj5bQD7ty8AiXB6CcdGgL6DPB5fozgXxaUYNwG8x4GMJEbvKjQBpI0AGVhMVnAUB4BwNgL626777gT03xhGBgAACyE5y2ux0coAAAAASUVORK5CYII=",
+  "mobs_mc_zombie_smith.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAQlBMVEUAAAAjIyMsLCw9PT01NTUZGRlJSUlrY15gW1eJLBdoAgJWRj1jVUZwZ1x/eGhMPDTBUyBjNC91QjtPJyKTYVSCUUa71El9AAAAAXRSTlMAQObYZgAAAqNJREFUeAHUlAfSqzAMhLGEnIIh/f5XfbuWSJn8DBCmvQ2OcCb72ZIMzagkqtpKMkuQWbNWkpJA8DOk9YA2qeZsxFBpPUDgz4kAjvUAJUA3AdpWNdnPKUjo5yImaVUlrW6jG+kUipEERp6Ldj4V/ptmNVOWsR6FqCW1IHcAyDAaBTJI6deEsARAHynWspGVEL/KEoCKRvZBonwHDAv7L3m32+dYlfPQohTaZAmAw3FHZRYRBNUMqS4DGADHw2533DuglVpTfuYBXq+83yOHTIAnklzzgMSkW3jaKtZO3R+A/1VdqepGrQaU0kMgBGiukMaTkOUNQDfGQoBBGdoO2J7CD0VMbzIoluZ3F5H74OgmAP4aZzBc4R6GoeuHYBWwOoSpo5xiOKBAJIQfIg47GPp5ANQj8dLzwy+fkcDpBECFBRQNQA8LbZDf8RfiJkopqjIOplC4Gjynw/nU+dqlDFVltoiMPUTb6Xw4EUVFKSZTSFw9MQURo5kE7p43AWES00UUaOwCLaWcutIh61MpXr6hB60sPUhPS+eTaOQEQPMe1z4rLqYShw8f1H98IjxOdIHvbh9ClZe67v2GbZzWZQyzmnjZXscwq9pylY0A0Q2ALSmYvRpOrS6ivZ5cssw9V+gy7sBnlwq6fOGSsoBaa/ACXG43OO68v198BgzHN4DmnAMSnYADnisJd4Q6uzzu0OMvQLw7vgHXR9M8rteYPaqu3y2ECBF/ct9SGAExQzWov4pIwGcRq/hnAmKGewC/ATY++m9tpJmWETA2AQCG6RewyHsbmwC82sjwDVDvgH4AKG4ZAJdn9Ecb7fX+/KwBy842+ur0O2/RUWbRqbvn0LAR18edAIwFurmfO/BFcRYe90udNQsJTMAtXPhya/5txIFRAABYPzL7QM/hYwAAAABJRU5ErkJggg=="
+});
+
 // Minecraft stores zombie-villager profession clothing as transparent
 // overlays. VoxeLibre's six mob texture slots are complete 64x64 images, so
 // compose the base skin and profession overlay before writing the output.
@@ -449,14 +462,19 @@ async function pHorseLegacyTexture(u8,fallbackDataUrl){
 // Build complete zombie-villager textures from Minecraft's base skin plus its
 // transparent profession layer. Drawing in this order preserves the source
 // alpha and prevents the profession-only sheet from replacing the green skin.
-async function pCompositeTexture(baseU8,overlayU8){
-  const base=await u8ToImage(baseU8), overlay=await u8ToImage(overlayU8);
-  if(!base)return overlayU8;
-  if(!overlay)return baseU8;
-  const w=base.naturalWidth||base.width, h=base.naturalHeight||base.height;
+async function pCompositeTexture(baseU8,overlayU8,fallbackDataUrl){
+  const base=baseU8&&await u8ToImage(baseU8), overlay=overlayU8&&await u8ToImage(overlayU8);
+  const fallback=fallbackDataUrl&&await dataURLToImage(fallbackDataUrl);
+  if(!base && !fallback)return overlayU8;
+  if(!overlay && !fallback)return baseU8;
+  const source=base||fallback;
+  const w=source.naturalWidth||source.width, h=source.naturalHeight||source.height;
   const c=document.createElement("canvas"); c.width=w; c.height=h;
   const ctx=c.getContext("2d"); ctx.imageSmoothingEnabled=false;
-  ctx.clearRect(0,0,w,h); ctx.drawImage(base,0,0,w,h); ctx.drawImage(overlay,0,0,w,h);
+  ctx.clearRect(0,0,w,h);
+  if(fallback)ctx.drawImage(fallback,0,0,w,h);
+  if(base)ctx.drawImage(base,0,0,w,h);
+  if(overlay)ctx.drawImage(overlay,0,0,w,h);
   return canvasToU8(c);
 }
 
@@ -1518,8 +1536,9 @@ async function convertTextures(file){
       const baseName=ZOMBIE_VILLAGER_BASE.find(name=>merged[name]);
       const overlayName=zvCandidates.find(name=>merged[name]);
       let bytes=null;
-      if(baseName && overlayName) bytes=await pCompositeTexture(merged[baseName],merged[overlayName]);
-      else if(baseName) bytes=merged[baseName];
+      const fallback=EMBEDDED_ZOMBIE_VILLAGER_FALLBACKS[o];
+      if(baseName && overlayName) bytes=await pCompositeTexture(merged[baseName],merged[overlayName],fallback);
+      else if(baseName) bytes=await pCompositeTexture(merged[baseName],null,fallback);
       if(bytes){ out.file(o,bytes); copied++; }
       tick();
       continue;
@@ -1528,6 +1547,8 @@ async function convertTextures(file){
     const src=candidates.find(name=>merged[name]);
     if(src){
       let bytes=merged[src];
+      if(o==="mobs_mc_zombie_villager.png")
+        bytes=await pCompositeTexture(bytes,null,EMBEDDED_ZOMBIE_VILLAGER_FALLBACKS[o]);
       if(/^mobs_mc_horse_/.test(o) || /^mcl_mobitems_horse_armor_/.test(o)){
         const fallbackKey=HORSE_LEGACY_FALLBACKS[o];
         bytes=await pHorseLegacyTexture(bytes,fallbackKey && EMBEDDED_HORSE_LEGACY_TEMPLATES[fallbackKey]);
