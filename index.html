@@ -66,8 +66,11 @@
   .default-source code{color:var(--orange2);background:#00000033;padding:1px 4px;border-radius:4px}
   .default-source a{color:var(--orange2)}
   .default-source .source-actions{display:flex;gap:8px;align-items:center;margin-left:25px;flex-wrap:wrap}
+  .default-source .source-url{flex:1 1 300px;min-width:220px;padding:7px 9px;border:1px solid #5a5a64;border-radius:8px;background:var(--panel2);color:var(--text);font:inherit}
+  .default-source .source-url:focus{outline:none;border-color:var(--orange)}
   .default-source .source-btn{padding:7px 10px;border:1px solid #5a5a64;border-radius:8px;background:var(--panel2);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
   .default-source .source-btn:hover{border-color:var(--orange);color:var(--orange2)}
+  .default-source .source-file-name{font-size:11px;color:var(--muted);word-break:break-all}
 </style>
 </head>
 <body>
@@ -88,9 +91,14 @@
         <span>Auto-download Minecraft default textures as a fallback</span></label>
       <span class="source-detail">Configured CurseForge source: <code id="defaultVersion">loading…</code> · your uploaded pack is applied on top.</span>
       <div class="source-actions">
+        <input class="source-url" id="defaultUrl" type="url" spellcheck="false" placeholder="Optional: paste CurseForge Download File link">
+        <label class="source-btn" for="defaultFile">Use downloaded ZIP</label>
+        <input id="defaultFile" type="file" accept=".zip">
+        <span class="source-file-name" id="defaultFileName">no local ZIP selected</span>
         <button class="source-btn" id="defaultBtn" type="button">Convert default pack only</button>
-        <a id="defaultLink" target="_blank" rel="noopener" href="#">Open source page</a>
+        <a id="defaultLink" target="_blank" rel="noopener" href="#">Open download link</a>
       </div>
+      <span class="source-detail">If you press CurseForge&rsquo;s download button in another tab, paste its <code>/download/FILE_ID</code> link above. The converter will try that link first.</span>
     </div>
     <label id="drop" for="file">
       <svg class="ico" viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -204,6 +212,7 @@ const CURSEFORGE_DEFAULT_PACK = Object.freeze({
 let builtZip=null, outBlob=null, outName="texture_pack.zip";
 let mode="textures"; // "textures" | "sounds"
 let sndOut="mod";    // sound output: "mod" | "patch"
+let localDefaultPackFile=null; // optional downloaded CurseForge ZIP when browser CORS blocks fetch
 
 function applyTexts(){
   const snd = mode==="sounds", patch = snd && sndOut==="patch";
@@ -235,7 +244,7 @@ function applyTexts(){
   $("patchNote").style.display = patch ? "block" : "none";
   $("defaultSource").style.display = snd ? "none" : "block";
   $("defaultVersion").textContent = CURSEFORGE_DEFAULT_PACK.version+" · file "+CURSEFORGE_DEFAULT_PACK.fileId+" · updated "+CURSEFORGE_DEFAULT_PACK.updated;
-  $("defaultLink").href = CURSEFORGE_DEFAULT_PACK.projectUrl;
+  $("defaultLink").href = CURSEFORGE_DEFAULT_PACK.downloadUrls[0];
 }
 function setMode(m){ mode=m; applyTexts(); resetUI(); }
 function setFmt(f){ sndOut=f; applyTexts(); resetUI(); }
@@ -1273,9 +1282,22 @@ async function addTextureZipToMerged(zip, merged){
   for(const ov of overlays) await copyBase(ov+"/");
 }
 
+function normalizeCurseForgeDownloadUrl(raw){
+  try{
+    const u=new URL(raw);
+    if(/(^|\.)curseforge\.com$/i.test(u.hostname) && !/\/download\//.test(u.pathname)){
+      const m=u.pathname.match(/\/(?:files\/)?(\d+)\/?$/);
+      if(m) u.pathname=u.pathname.replace(/\/(?:files\/)?\d+\/?$/, "/download/"+m[1]);
+    }
+    return u.href;
+  }catch(e){ return raw; }
+}
+
 async function downloadCurseForgeDefaultPack(){
   let last=null;
-  for(const url of CURSEFORGE_DEFAULT_PACK.downloadUrls){
+  const pasted=normalizeCurseForgeDownloadUrl($("defaultUrl").value.trim());
+  const urls=$("defaultUrl").value.trim() ? [pasted,...CURSEFORGE_DEFAULT_PACK.downloadUrls.filter(u=>u!==pasted)] : CURSEFORGE_DEFAULT_PACK.downloadUrls;
+  for(const url of urls){
     try{
       setStatus("Downloading Minecraft default textures from CurseForge…");
       const res=await fetch(url,{mode:"cors",redirect:"follow"});
@@ -1286,14 +1308,20 @@ async function downloadCurseForgeDefaultPack(){
       return zip;
     }catch(e){ last=e; }
   }
-  throw new Error("CurseForge default pack could not be downloaded in this browser. Open the source page and download file "+CURSEFORGE_DEFAULT_PACK.fileId+" manually, then upload that zip together with your pack. "+(last&&last.message?last.message:""));
+  throw new Error("CurseForge default pack could not be fetched in this browser. Use CurseForge's download button, then click 'Use downloaded ZIP' in the converter and try again. "+(last&&last.message?last.message:""));
 }
 
 async function convertTextures(file){
   showProgress(0);
   const merged={};
   if($("useDefault").checked){
-    const defaultZip=await downloadCurseForgeDefaultPack();
+    let defaultZip;
+    if(localDefaultPackFile){
+      setStatus("Reading the downloaded Minecraft default ZIP…");
+      defaultZip=await JSZip.loadAsync(await localDefaultPackFile.arrayBuffer());
+    }else{
+      defaultZip=await downloadCurseForgeDefaultPack();
+    }
     await addTextureZipToMerged(defaultZip,merged);
   }
   if(file){
@@ -1425,13 +1453,22 @@ async function finalize(){
 
 // UI wiring
 applyTexts();
-const drop=$("drop"), fileInput=$("file");
+const drop=$("drop"), fileInput=$("file"), defaultFileInput=$("defaultFile");
 // block the browser from navigating away when a file is dropped outside the box
 ["dragenter","dragover","drop","dragleave"].forEach(e=>window.addEventListener(e,ev=>ev.preventDefault()));
 ["dragenter","dragover"].forEach(e=>drop.addEventListener(e,()=>drop.classList.add("drag")));
 ["dragleave","drop"].forEach(e=>drop.addEventListener(e,()=>drop.classList.remove("drag")));
 drop.addEventListener("drop",ev=>{ if(ev.dataTransfer.files && ev.dataTransfer.files.length) handle(ev.dataTransfer.files[0]); });
 fileInput.addEventListener("change",ev=>{ if(ev.target.files.length) handle(ev.target.files[0]); ev.target.value=""; });
+defaultFileInput.addEventListener("change",ev=>{
+  if(ev.target.files.length){
+    localDefaultPackFile=ev.target.files[0];
+    $("useDefault").checked=true;
+    $("defaultFileName").textContent=localDefaultPackFile.name;
+    resetUI();
+  }
+  ev.target.value="";
+});
 $("mTex").addEventListener("click",()=>setMode("textures"));
 $("mSnd").addEventListener("click",()=>setMode("sounds"));
 $("fmtMod").addEventListener("click",()=>setFmt("mod"));
