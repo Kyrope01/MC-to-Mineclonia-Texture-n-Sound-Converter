@@ -1814,56 +1814,118 @@ function handle(file){
   }
 }
 
-// Subtle interactive orange particle field. It stays behind the converter UI,
-// uses no external assets, and responds to the pointer without competing with
-// the upload controls.
+// Interactive background copied from the supplied Ace of Spades converter style:
+// full-screen Perlin-noise waves, a pointer-shaped dark disturbance, and an
+// ordered-dither halftone pass. Both inks remain orange so the effect does not
+// reintroduce the reference page's red/green palette.
 (()=>{
   const canvas=document.getElementById("bgCanvas"); if(!canvas)return;
-  const ctx=canvas.getContext("2d");
-  let w=0,h=0,dpr=1,raf=0,points=[],pointer={x:-9999,y:-9999,active:false};
-  const orange=[255,140,26], light=[255,190,104];
-  function resize(){
-    dpr=Math.min(window.devicePixelRatio||1,2); w=window.innerWidth; h=window.innerHeight;
-    canvas.width=Math.max(1,Math.floor(w*dpr)); canvas.height=Math.max(1,Math.floor(h*dpr));
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    const count=Math.max(26,Math.min(88,Math.floor(w*h/14500)));
-    points=Array.from({length:count},()=>({
-      x:Math.random()*w,y:Math.random()*h,
-      vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,
-      r:.7+Math.random()*1.7,phase:Math.random()*Math.PI*2
-    }));
+  const VERT=[
+    "attribute vec2 aPos;",
+    "void main(){gl_Position=vec4(aPos,0.0,1.0);}"
+  ].join("\\n");
+  const FRAG=[
+    "precision highp float;",
+    "uniform vec2 resolution;",
+    "uniform float time;",
+    "uniform vec2 mousePos;",
+    "uniform float mouseRadius;",
+    "uniform vec3 colorA;",
+    "uniform vec3 colorB;",
+    "uniform sampler2D bayer;",
+    "const int OCTAVES=4;",
+    "const float WAVE_SPEED=0.05;",
+    "const float WAVE_FREQ=3.0;",
+    "const float WAVE_AMP=0.3;",
+    "const float PIXEL_SIZE=2.0;",
+    "const float COLOR_NUM=4.0;",
+    "",
+    "vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}",
+    "vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}",
+    "vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}",
+    "vec2 fade2(vec2 t){return t*t*t*(t*(t*6.0-15.0)+10.0);}",
+    "",
+    "float cnoise(vec2 P){",
+    "  vec4 Pi=floor(P.xyxy)+vec4(0.0,0.0,1.0,1.0);",
+    "  vec4 Pf=fract(P.xyxy)-vec4(0.0,0.0,1.0,1.0);",
+    "  Pi=mod289(Pi);",
+    "  vec4 ix=Pi.xzxz; vec4 iy=Pi.yyww;",
+    "  vec4 fx=Pf.xzxz; vec4 fy=Pf.yyww;",
+    "  vec4 i=permute(permute(ix)+iy);",
+    "  vec4 gx=fract(i*(1.0/41.0))*2.0-1.0;",
+    "  vec4 gy=abs(gx)-0.5; vec4 tx=floor(gx+0.5); gx=gx-tx;",
+    "  vec2 g00=vec2(gx.x,gy.x); vec2 g10=vec2(gx.y,gy.y);",
+    "  vec2 g01=vec2(gx.z,gy.z); vec2 g11=vec2(gx.w,gy.w);",
+    "  vec4 norm=taylorInvSqrt(vec4(dot(g00,g00),dot(g01,g01),dot(g10,g10),dot(g11,g11)));",
+    "  g00*=norm.x; g01*=norm.y; g10*=norm.z; g11*=norm.w;",
+    "  float n00=dot(g00,vec2(fx.x,fy.x)); float n10=dot(g10,vec2(fx.y,fy.y));",
+    "  float n01=dot(g01,vec2(fx.z,fy.z)); float n11=dot(g11,vec2(fx.w,fy.w));",
+    "  vec2 fade_xy=fade2(Pf.xy);",
+    "  vec2 n_x=mix(vec2(n00,n01),vec2(n10,n11),fade_xy.x);",
+    "  return 2.3*mix(n_x.x,n_x.y,fade_xy.y);",
+    "}",
+    "float fbm(vec2 p){float value=0.0; float amp=1.0; for(int i=0;i<OCTAVES;i++){value+=amp*abs(cnoise(p)); p*=WAVE_FREQ; amp*=WAVE_AMP;} return value;}",
+    "float pattern(vec2 p){vec2 p2=p-time*WAVE_SPEED; return fbm(p+fbm(p2));}",
+    "vec3 toSRGB(vec3 c){vec3 lo=c*12.92; vec3 hi=1.055*pow(max(c,vec3(0.0)),vec3(1.0/2.4))-0.055; return mix(lo,hi,step(vec3(0.0031308),c));}",
+    "void main(){",
+    "  vec2 frag=gl_FragCoord.xy; vec2 uv=frag/resolution.xy; uv-=0.5; uv.x*=resolution.x/resolution.y;",
+    "  float f=pattern(uv); vec2 mouseNDC=(mousePos/resolution-0.5)*vec2(1.0,-1.0);",
+    "  mouseNDC.x*=resolution.x/resolution.y; vec2 d=uv-mouseNDC; float distSq=dot(d,d);",
+    "  float effect=exp(-distSq/(mouseRadius*mouseRadius*0.5)); f-=2.5*effect;",
+    "  vec2 pq=uv+vec2(11.3+time*0.010,-4.7-time*0.008); float plate=fbm(pq*1.5);",
+    "  vec3 hue=plate>0.5?colorB:colorA; vec3 col=hue*pow(clamp(f*1.15,0.0,1.0),1.55);",
+    "  vec2 coord=floor(frag/PIXEL_SIZE); float threshold=texture2D(bayer,(mod(coord,8.0)+0.5)/8.0).r-0.25;",
+    "  float steps=1.0/(COLOR_NUM-1.0); col=clamp(col+threshold*steps-0.2,0.0,1.0);",
+    "  col=floor(col*(COLOR_NUM-1.0)+0.5)/(COLOR_NUM-1.0); gl_FragColor=vec4(toSRGB(col),1.0);",
+    "}"
+  ].join("\\n");
+  const BAYER8=[0,48,12,60,3,51,15,63,32,16,44,28,35,19,47,31,8,56,4,52,11,59,7,55,
+    40,24,36,20,43,27,39,23,2,50,14,62,1,49,13,61,34,18,46,30,33,17,45,29,
+    10,58,6,54,9,57,5,53,42,26,38,22,41,25,37,21];
+  const COLOR_A=[255/255,140/255,26/255];
+  const COLOR_B=[255/255,190/255,92/255];
+  const MOUSE_RADIUS=0.175;
+  let gl=null;
+  try{gl=canvas.getContext("webgl",{antialias:false,alpha:false,depth:false,stencil:false})||canvas.getContext("experimental-webgl");}catch(e){gl=null;}
+  if(gl&&paintGL(gl))return;
+  fallbackField(canvas);
+
+  function compile(type,source){
+    const shader=gl.createShader(type); gl.shaderSource(shader,source); gl.compileShader(shader);
+    if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){if(window.console)console.warn("background shader: "+gl.getShaderInfoLog(shader));return null;}
+    return shader;
   }
-  function rgba(c,a){return `rgba(${c[0]},${c[1]},${c[2]},${a})`;}
-  function frame(now){
-    ctx.clearRect(0,0,w,h);
-    const pulse=now*.0007;
-    if(pointer.active){
-      const glow=ctx.createRadialGradient(pointer.x,pointer.y,0,pointer.x,pointer.y,210);
-      glow.addColorStop(0,rgba(orange,.075)); glow.addColorStop(1,rgba(orange,0));
-      ctx.fillStyle=glow; ctx.fillRect(pointer.x-220,pointer.y-220,440,440);
-    }
-    for(const p of points){
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<-20)p.x=w+20; if(p.x>w+20)p.x=-20;
-      if(p.y<-20)p.y=h+20; if(p.y>h+20)p.y=-20;
-      if(pointer.active){
-        const dx=p.x-pointer.x,dy=p.y-pointer.y,d=Math.hypot(dx,dy);
-        if(d<125 && d>0){ const push=(125-d)/125*.018; p.vx+=dx/d*push; p.vy+=dy/d*push; }
-      }
-      p.vx*=.998; p.vy*=.998;
-      const a=.20+Math.sin(pulse+p.phase)*.08;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=rgba(light,a); ctx.fill();
-    }
-    for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++){
-      const a=points[i],b=points[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
-      if(d<118){ ctx.strokeStyle=rgba(orange,(1-d/118)*.105); ctx.lineWidth=.7; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
-    }
-    raf=requestAnimationFrame(frame);
+  function paintGL(gl){
+    const vs=compile(gl.VERTEX_SHADER,VERT),fs=compile(gl.FRAGMENT_SHADER,FRAG); if(!vs||!fs)return false;
+    const prog=gl.createProgram(); gl.attachShader(prog,vs); gl.attachShader(prog,fs); gl.linkProgram(prog);
+    if(!gl.getProgramParameter(prog,gl.LINK_STATUS)){if(window.console)console.warn("background program: "+gl.getProgramInfoLog(prog));return false;}
+    gl.useProgram(prog);
+    const quad=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,quad);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    const loc=gl.getAttribLocation(prog,"aPos"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+    const tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,tex);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE,8,8,0,gl.LUMINANCE,gl.UNSIGNED_BYTE,new Uint8Array(BAYER8));
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    const u={resolution:gl.getUniformLocation(prog,"resolution"),time:gl.getUniformLocation(prog,"time"),mousePos:gl.getUniformLocation(prog,"mousePos"),mouseRadius:gl.getUniformLocation(prog,"mouseRadius"),colorA:gl.getUniformLocation(prog,"colorA"),colorB:gl.getUniformLocation(prog,"colorB"),bayer:gl.getUniformLocation(prog,"bayer")};
+    gl.uniform1f(u.mouseRadius,MOUSE_RADIUS); gl.uniform3f(u.colorA,COLOR_A[0],COLOR_A[1],COLOR_A[2]); gl.uniform3f(u.colorB,COLOR_B[0],COLOR_B[1],COLOR_B[2]); gl.uniform1i(u.bayer,0);
+    const mouse={x:-1e4,y:-1e4,tx:-1e4,ty:-1e4}; let dpr=1;
+    function resize(){dpr=Math.min(window.devicePixelRatio||1,2); const w=Math.max(1,Math.round(canvas.clientWidth*dpr)),h=Math.max(1,Math.round(canvas.clientHeight*dpr)); if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;} gl.viewport(0,0,w,h);}
+    window.addEventListener("pointermove",e=>{const r=canvas.getBoundingClientRect(); mouse.tx=(e.clientX-r.left)*dpr; mouse.ty=(e.clientY-r.top)*dpr; if(mouse.x<-1e3){mouse.x=mouse.tx;mouse.y=mouse.ty;}},{passive:true});
+    window.addEventListener("pointerleave",()=>{mouse.tx=-1e4;mouse.ty=-1e4;},{passive:true}); window.addEventListener("resize",resize,{passive:true});
+    const still=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches; const start=(window.performance&&performance.now())||Date.now();
+    const now=()=>((window.performance&&performance.now())||Date.now())-start;
+    function frame(){resize(); const t=still?12:now()/1000; mouse.x+=(mouse.tx-mouse.x)*.12; mouse.y+=(mouse.ty-mouse.y)*.12; gl.uniform2f(u.resolution,canvas.width,canvas.height); gl.uniform1f(u.time,t); gl.uniform2f(u.mousePos,mouse.x,mouse.y); gl.drawArrays(gl.TRIANGLES,0,3); if(!still)requestAnimationFrame(frame);}
+    frame(); return true;
   }
-  window.addEventListener("resize",resize,{passive:true});
-  window.addEventListener("pointermove",ev=>{pointer.x=ev.clientX;pointer.y=ev.clientY;pointer.active=true;},{passive:true});
-  window.addEventListener("pointerleave",()=>{pointer.active=false;},{passive:true});
-  resize(); raf=requestAnimationFrame(frame);
+  function fallbackField(c){
+    const ctx=c.getContext("2d"); let W=0,H=0,dpr=1,tile=null,size=260; const mouse={x:0,y:0,tx:0,ty:0};
+    function build(){const s=34,rowH=s*Math.sin(Math.PI/3),h=rowH*.5,w=s*.5; tile=document.createElement("canvas");tile.width=tile.height=size;const g=tile.getContext("2d");g.fillStyle="rgba(255,170,62,.30)";for(let y=0;y<size+rowH;y+=rowH)for(let x=0;x<size+s;x+=s){const off=(Math.round(y/rowH)%2)?w:0;g.beginPath();g.arc(x+off,y,1.1,0,Math.PI*2);g.fill();}}
+    function resize(){dpr=Math.min(window.devicePixelRatio||1,2);W=c.clientWidth;H=c.clientHeight;c.width=Math.round(W*dpr);c.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);build();}
+    let t0=(window.performance&&performance.now())||0;
+    function frame(now){const t=((now||0)-t0)/1000;mouse.x+=(mouse.tx-mouse.x)*.05;mouse.y+=(mouse.ty-mouse.y)*.05;ctx.clearRect(0,0,W,H);const pat=ctx.createPattern(tile,"repeat");ctx.save();ctx.globalAlpha=.6;ctx.translate(-(size/2)+mouse.x*16+t*6,-(size/2)+mouse.y*16+t*3);ctx.fillStyle=pat;ctx.fillRect(-size*2,-size*2,W+size*4,H+size*4);ctx.restore();requestAnimationFrame(frame);}
+    window.addEventListener("pointermove",e=>{mouse.tx=(e.clientX/window.innerWidth-.5)*2;mouse.ty=(e.clientY/window.innerHeight-.5)*2;},{passive:true}); window.addEventListener("resize",resize,{passive:true}); resize(); requestAnimationFrame(frame);
+  }
 })();
 </script>
 </body>
