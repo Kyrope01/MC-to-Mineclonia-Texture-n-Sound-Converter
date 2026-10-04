@@ -7,44 +7,47 @@
 <title>MC to VoxeLibre Texturepack Converter</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  :root{ --bg:#1f1f23; --panel:#2b2b31; --panel2:#34343c; --orange:#ff8c1a; --orange2:#ffae5c; --text:#ffffff; --muted:#9a9aa2; }
+  :root{ --bg:#06080a; --panel:#0c1014; --panel2:#13181d; --panel3:#090c10; --orange:#ff8c1a; --orange2:#ffb45f; --text:#ffffff; --muted:#969da5; }
   *{box-sizing:border-box}
   body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);
-       display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:32px 16px}
+       display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:32px 16px;position:relative;isolation:isolate;overflow-x:hidden}
+  #bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.88}
+  body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 15%,rgba(255,132,20,.055),transparent 58%),linear-gradient(180deg,rgba(2,4,6,.12),rgba(2,4,6,.48));}
+  h1,.sub,.toggle,.card,.patchnote,.foot{position:relative;z-index:1}
   h1{color:#ffffff;font-weight:700;margin:0 0 6px;text-align:center}
   .sub{color:var(--muted);margin:0 0 28px;text-align:center;font-size:14px}
-  .card{background:var(--panel);border:1px solid #3e3e46;border-radius:14px;padding:26px;width:100%;max-width:620px;
-        box-shadow:0 10px 30px rgba(0,0,0,.35)}
-  #drop{display:block;border:2px dashed var(--orange);border-radius:12px;background:var(--panel2);padding:46px 20px;text-align:center;
+  .card{background:rgba(10,14,18,.94);border:1px solid #242b32;border-radius:14px;padding:26px;width:100%;max-width:620px;
+        box-shadow:0 16px 44px rgba(0,0,0,.58),0 0 0 1px rgba(255,140,26,.025)}
+  #drop{display:block;border:2px dashed #a45b18;border-radius:12px;background:rgba(5,8,11,.94);padding:46px 20px;text-align:center;
         cursor:pointer;transition:.15s}
-  #drop.drag{background:#3a3122;border-color:var(--orange2)}
+  #drop.drag{background:#1d140b;border-color:var(--orange2);box-shadow:0 0 24px rgba(255,140,26,.14)}
   #drop .ico{color:var(--orange);margin-bottom:8px;display:block;margin-inline:auto}
   #drop p{margin:10px 0 2px;font-weight:600}
   #drop .hint{color:var(--muted);font-size:13px}
   .row{margin-top:20px}
-  .progress{height:14px;background:var(--panel2);border-radius:8px;overflow:hidden;display:none}
+  .progress{height:14px;background:#080b0e;border:1px solid #202830;border-radius:8px;overflow:hidden;display:none}
   .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--orange2));transition:width .12s}
   #status{margin-top:12px;font-size:14px;color:var(--muted);min-height:20px}
   #status b{color:var(--text)}
   #nameStep{margin-top:18px;display:none}
   .namelbl{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
   .name-row{display:flex;gap:8px}
-  .name-row input{flex:1;padding:11px 12px;border:1px solid #4a4a54;border-radius:10px;background:var(--panel2);
+  .name-row input{flex:1;padding:11px 12px;border:1px solid #2c353e;border-radius:10px;background:#080b0e;
                   color:var(--text);font-size:15px;outline:none}
   .name-row input:focus{border-color:var(--orange)}
   button{font-family:inherit}
-  .btn{padding:11px 18px;border:none;border-radius:10px;background:var(--orange);color:#1b1205;font-weight:700;
+  .btn{padding:11px 18px;border:1px solid #49351f;border-radius:10px;background:#10151a;color:var(--orange2);font-weight:700;
        font-size:15px;cursor:pointer;white-space:nowrap}
-  .btn:hover{background:var(--orange2)}
-  button.dl{margin-top:18px;width:100%;padding:14px;border:none;border-radius:10px;background:var(--orange);
-            color:#1b1205;font-weight:700;font-size:16px;cursor:pointer;display:none}
-  button.dl:hover{background:var(--orange2)}
+  .btn:hover{background:#21170d;border-color:var(--orange);color:#fff}
+  button.dl{margin-top:18px;width:100%;padding:14px;border:1px solid #6d4218;border-radius:10px;background:#10151a;
+            color:var(--orange2);font-weight:700;font-size:16px;cursor:pointer;display:none}
+  button.dl:hover{background:#21170d;border-color:var(--orange);color:#fff}
   .hide{display:none!important}
   input[type=file]{display:none}
   .foot{margin-top:24px;color:var(--muted);font-size:12px;text-align:center;max-width:620px}
   .foot .fseg b{color:var(--orange2)}
-  .patchnote{margin:22px auto 18px;max-width:620px;text-align:left;background:var(--panel2);
-             border:1px solid #4a4a54;border-left:3px solid var(--orange);border-radius:10px;
+  .patchnote{margin:22px auto 18px;max-width:620px;text-align:left;background:#0b0f13;
+             border:1px solid #252d35;border-left:3px solid var(--orange);border-radius:10px;
              padding:10px 14px;font-size:12.5px;color:var(--muted);line-height:1.6}
   .patchnote b{color:var(--text)}
   .patchnote .pnsub{font-size:12px;opacity:.85}
@@ -53,18 +56,19 @@
   .patchnote code{color:var(--orange2);font-size:12px;background:#00000033;padding:1px 5px;
                   border-radius:4px;word-break:break-all}
   .toggle{display:flex;gap:8px;margin:0 0 22px;justify-content:center}
-  .toggle button{padding:9px 22px;border-radius:999px;border:1px solid #4a4a54;background:var(--panel2);
+  .toggle button{padding:9px 22px;border-radius:999px;border:1px solid #2c353e;background:#0d1217;
                   color:var(--muted);font-weight:700;font-size:14px;cursor:pointer}
-  .toggle button.on{background:var(--orange);border-color:var(--orange);color:#1b1205}
-  .toggle button:not(.on):hover{color:var(--text);border-color:var(--orange2)}
+  .toggle button.on{background:#21170d;border-color:var(--orange);color:var(--orange2);box-shadow:0 0 16px rgba(255,140,26,.08)}
+  .toggle button:not(.on):hover{color:var(--text);border-color:var(--orange2);background:#151b21}
   .toggle.fmt{margin:-14px 0 16px;align-items:center}
   .fmt .fmtlbl{color:var(--muted);font-size:13px;font-weight:600}
   .fmt button{padding:6px 14px;font-size:12.5px}
-  .default-download-link{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;padding:10px 14px;border:1px solid #5a5a64;border-radius:9px;background:var(--panel2);color:var(--orange2);font:inherit;line-height:1.4;word-break:break-all;text-decoration:none;user-select:text}
+  .default-download-link{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;padding:10px 14px;border:1px solid #2c353e;border-radius:9px;background:#080b0e;color:var(--orange2);font:inherit;line-height:1.4;word-break:break-all;text-decoration:none;user-select:text}
   .default-download-link:hover{border-color:var(--orange);color:var(--text)}
 </style>
 </head>
 <body>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
   <h1>MC to VoxeLibre Converter</h1>
   <p class="sub" id="subP">Drop a Minecraft texture-pack .zip &mdash; get a ready-to-use VoxeLibre (Luanti) texture pack</p>
   <div class="toggle" role="tablist">
@@ -270,6 +274,34 @@ const EMBEDDED_ZOMBIE_VILLAGER_FALLBACKS = Object.freeze({
   "mobs_mc_zombie_smith.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAQlBMVEUAAAAjIyMsLCw9PT01NTUZGRlJSUlrY15gW1eJLBdoAgJWRj1jVUZwZ1x/eGhMPDTBUyBjNC91QjtPJyKTYVSCUUa71El9AAAAAXRSTlMAQObYZgAAAqNJREFUeAHUlAfSqzAMhLGEnIIh/f5XfbuWSJn8DBCmvQ2OcCb72ZIMzagkqtpKMkuQWbNWkpJA8DOk9YA2qeZsxFBpPUDgz4kAjvUAJUA3AdpWNdnPKUjo5yImaVUlrW6jG+kUipEERp6Ldj4V/ptmNVOWsR6FqCW1IHcAyDAaBTJI6deEsARAHynWspGVEL/KEoCKRvZBonwHDAv7L3m32+dYlfPQohTaZAmAw3FHZRYRBNUMqS4DGADHw2533DuglVpTfuYBXq+83yOHTIAnklzzgMSkW3jaKtZO3R+A/1VdqepGrQaU0kMgBGiukMaTkOUNQDfGQoBBGdoO2J7CD0VMbzIoluZ3F5H74OgmAP4aZzBc4R6GoeuHYBWwOoSpo5xiOKBAJIQfIg47GPp5ANQj8dLzwy+fkcDpBECFBRQNQA8LbZDf8RfiJkopqjIOplC4Gjynw/nU+dqlDFVltoiMPUTb6Xw4EUVFKSZTSFw9MQURo5kE7p43AWES00UUaOwCLaWcutIh61MpXr6hB60sPUhPS+eTaOQEQPMe1z4rLqYShw8f1H98IjxOdIHvbh9ClZe67v2GbZzWZQyzmnjZXscwq9pylY0A0Q2ALSmYvRpOrS6ivZ5cssw9V+gy7sBnlwq6fOGSsoBaa/ACXG43OO68v198BgzHN4DmnAMSnYADnisJd4Q6uzzu0OMvQLw7vgHXR9M8rteYPaqu3y2ECBF/ct9SGAExQzWov4pIwGcRq/hnAmKGewC/ATY++m9tpJmWETA2AQCG6RewyHsbmwC82sjwDVDvgH4AKG4ZAJdn9Ecb7fX+/KwBy842+ur0O2/RUWbRqbvn0LAR18edAIwFurmfO/BFcRYe90udNQsJTMAtXPhya/5txIFRAABYPzL7QM/hYwAAAABJRU5ErkJggg=="
 });
 
+// The same target-layout fallback is needed for regular villagers. In
+// current Minecraft versions the base is split into biome/type and profession
+// layers, while VoxeLibre expects a complete 64x64 texture per job.
+const EMBEDDED_VILLAGER_FALLBACKS = Object.freeze({
+  "mobs_mc_villager.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAgVBMVEUAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFPWyk+RiBNWCg/RiBLVkRIVT9TYkpea1NARiBBSyNDTSM/SSFUYStGUSUyOhpIUiZldlhvf2Nqel45RTMUbywtAAAAAXRSTlMAQObYZgAAAkxJREFUeAGkktFugzAUQ3HMbRw6aDtY//9T5zAiTXshXY8vQubhJASGBhLJlDCOYcZxGC6VoZt0MAZMvC5gYs45MbATl0a/IDdBxL8FfEOQEk1KHa/Qe4gvgkTz6zP2AtEI5aD1dj8VCIA8ZZpKmXJRrccloEewR6XkXB1yafGcC9qCxw4mtfV7BTooxQo79IdTAeWQuH7sXGsRZWhhh0BUzDOx3O6Px/32Cc5zVOlUITt2IFigddtZZQEozfGTjjMgAFnwtXlWybVaw/H0/UgS1ueybctzhfYHCBhLvssjF90GYRiK9i/SrC8b4tDu/z9w11wi8WobkLRp24HYslQf9ZLDbyUce0Ic2CH4ABCEnneC0/l8ulyvl4ngdlsVyMBEcAZXUCVQFZwKAagWLCMcByJ5FcEXxycQ7ocpjarg8bfx54kgxmJA49T2rAtOM4oAhjAXSHKBl/RW0IqZtEVAIEgQZDh6gTyJQFoz3y8TqBcQM/ZiQBFlhDffgHiEMKMZCQTPSwH/wZpAp4Lufu/GRxQIqhk7auGwRvd4dOMjQoFHoEBeCz5nrEWIQ6sUtO34GjmxHZ4j40bMlr/K2TRnAaYomwUas+GoJhck3SNQo0Btj0AyBIygtjWCLym/QbnZlFDqBaqaYjSNMWmP5CyqMDtFMGUhCFEtLARNI6DscyIrEdTmEaQBGMQMpUwZJAgq4ApeM9QicGoFvuZ7ZiicaJBaAZMns8TlwjYBI+wXCCPIfoF4BJE/E2HHNQIzmfKvBAkMggS++SP+PF9Cjb+0VecOTwAAAABJRU5ErkJggg==",
+  "mobs_mc_villager_armorer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAh1BMVEUAAAAAAAAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFPWyk+RiBNWCg/RiBLVkRIVT9TYkpea1NARiBBSyNDTSM/SSFUYStGUSUyOhpIUiZldlhvf2Nqel45RTOOGCppAAAAAXRSTlMAQObYZgAAAvJJREFUWMPVlotyqjAQhp0JEWTMEVuiUg/lqtH2vP/znX9zQS6i0M50pj8lNpj9srvZYBYLK+Zxzj2PLZc+tFwuFgFpMVme1dJnkD8fwD2+Wq08ru1BCJymA1YO4PtfBvBvADxKIrL45RCGSZwpN+FtGbuS8iDEQcqBIQvJ9TAICq0gMH1mnzM7LJViCwmZ9gEYynBbexB019zUKKPMeZCprgDQ1w1gH9BFTQOgKHAPAHayVghufgOwjmZSiCwTQmaDEIyaVQvCrlwOINf2CijklK4g+KMVBJQ6TqZ8vV43gHFhsL/ZcBZtX15fX7Yx45uNT9A1ifPnJYxIAQjlTkuGADA83Pjmeu5ByPWKyd1+hz+p146oPqMtwZ4CdMFgvDxEu110kGDpAjIVzfzFb1XyppUcrb4A+AsBkGg9A6Tv72mW51kHUBR3AXG83ZZQB/AO5dA0QCzKqpoAGAkBgHgAGIbwZjVMoga0QyDD9m2mdKvQFRlvRSxpU2aR3ZhDwPHoCNp76p20kiiKYiFETIAUnWajt+UAiZ2/DcC8UFrRuAr/PQKcSqXKU9LgtMrzuazKS4XPuqptIkdykJyUOt1MtQPzAIlS7fyRfULLB2s0FQHqkRCsuwihtwhJ3QKUuB4Ceh60AFUXcP34uLZvfIkRaJUyn9Ra3d1I18/Pa/vWNmgohMp2HgL+9XQvhIebegjQCW+W0fTMx4M3An7jmrbzqDeq97v4iwHFXu2LYh5Ajej7AFMiDuB6t2ddAPwuBoC6psFGrjcCKHTwPUAN4QykD0JKUQ+mF+hOFu/JAvZ0QNo3gDM0FVBqC3PEgu8mhFkAnQFMTyvroi8FvX2nAkxpQIXJIx6INE7jbBLgVl3t7NL7e3iiewzoqCyJNwmQxXHeNs3husnpVABsTAQmhpzKgVK6LyZ70Dk/56avaRNXYRg/6aJGXqLjAPL7BkiKeYCCarkpBCiYBdBJc6VkAepbANoJs3PgivHJL9HTYvzpQ/F/ctjg8nrhjSoAAAAASUVORK5CYII=",
+  "mobs_mc_villager_butcher.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAhFBMVEUAAAAAAKAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFARz01OjI3PTNARDw5PzVUWlBRWExdZVhnbmE2OjIzODBDSz8nLCU9QDg6PzV5wL9vsrFppKNgmZhOwBxgAAAAAXRSTlMAQObYZgAAAwdJREFUWMPVlmt3oyAQhj1HibdkU5oNW0V7IcG29v//v50ZwHiNmP20rxWFwzzMDENsEFiFEWMsisLdLgbtdkGQoAJvRVa7OATF2wEsYmmaRozsgZA4+QNSB4jjhwHsHwARJhGy+HAI0yRuVGg86G2jr2GGhlmYW7m+e64CYGqI0/P9Ps/3aZ5R19zYeADoyvI8TZGR2QEahCZJTqcTNVb4jsnFV/gL3ILWg33Wre8AVs68J+wFmRWEvzceDLXsO3oAm8wyhukKD79IB+zAEIgB8C4gCbBKYHJ8PLLwiT+fTs/8d8iOxxihexRj6yUMkQIgOwvSOQNACIPH2Fzru5Ax2rGz+CPg70xJRGoc4pEI/QoJ5p9fnoR4ejkDiwrIVHQYB/+rilKCyqKy2g6QNUgWVUFaA7y+vb2+f3y8DwBSzgKU1QDwBvoAeQGkVHivAxZCmAVMQ3COTpM4CQEN+7dZsjCziqEusLLE5aW84LUAqCpHIO+xdyXNA15HcoDCrt8HqBoB2NSrgKvSWl2LDmeYdQ2ABhgEMHlQJUm5p5t81fp6MyUH5gFl+QkqlX2WnY3W/fyhfUHhUwi9HKiROnchhGJ2FwxAwXU3hJEHk23sAOMQFB5DrDWtzRPbufofV9ZNBoAhSNu5CyiW1Avh7qGeWlLCu200PfO484vwJbAVX70hrafhNo2WTYPRaDkMyQ8gKwBUDfxSIKCWjwCkNgCph4BvA/heDUFqEwIABiG0BtAuA2h/TQ7czsLJ6CAeAKiIuqogB1UtSeAPDJpSVi3HSbw1PcXxwdUEUFRSF2OAulzUDUA9AMDZGAFMCJiDYQhgATYtb0EAoJ7iDYgrr2+QMRH8p21/uDC9kuPB4qUfgJzmRsKFQABPD1CC3whKzSbxDgDS3gPgJmwD0NwOYLcRIMlDAP4AQHUpJNkc0KsXgC/pwLknwPyDyN2LENsAsyFgFg5qcw5EH4Bv3nUw8MB8ZOh+CND/SvnWwWfCE36yV/8r5e3BrZKpFLd7YD6K3cpbPViWj/1foWDByZ7pKsAAAAAASUVORK5CYII=",
+  "mobs_mc_villager_cartographer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAk1BMVEU4MFBVAAD3O9gAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGHQ0NDFxcXPz8/Ly8tUWlBRWExdZVhnbmHIyMjHx8fNzc3R0dGurq5weWl7hHR2f29ARz3V1dXS0tLOzs6xsbHT09PMzMzlTyDdAAAAAXRSTlMAQObYZgAAA5RJREFUWIWkk01zhCAMhj2EyOfiIsVujz30sv///zWJYFXG2Zntg4LE8CYEHYYKKERUCsZRE+M4DIZpr9fZ3nBGVUYNhO4EkpDzpQAqtNYqlPWkYE4hX2aAyjYBrd8WwH8IKC4iVfHtLfRFPPKyiLBmsDvGI5cZgOOFDnylzdtoEi9L245MjkT+2yG5Arv7ELwP1juZrjd3TSDSmL64CfIYY4okIM15by1ruGoQI3VGgmUTozFRgm+dWIYWsGYQ3BZ/FdhXoasLd65C2w9rBkdO7j3okMsFN0kq3nhCJgJJcC9AzPPcCZCzniaEe5pzntMH4DRpFg0M4mH9908vQMGABFxZhOJIAMg46bVtjs/nRQYO5cTK8rnQVaSIrKqBfwk4ufcC8sGQf3ncl+X+KL/Mklt6gyAQhX3oQ90CEo3goKkkZP+r6zAMYoWa6EO/HkW8nd+Zg8iiHyj80R+fLwH/VaIhyQvrPECSXgHarmuvfX99ByBYPwAdqkf9HUBtAHkLDSsPMQN443pwhVwBSS0HsUj6rQjQQg+REHwqYdCo5AbQbiS08LsnBNcQCegHoaQCfAjSo8qA4JfaGEWEIbUhAPCIAEkA9WsGRDBGboUA/3VB55KDzACam4iAFKGk+AmgdjJgP7WgOMSYQgQouQfgJqiC6OS5tIzjNI3roaOwgq2qksbbbVyPw4CvjZYiV6sw8PQmILRaWsYiIKiew7S6ZUz2FljbgNUaABocsA94PHKAQ4Dz/rMAbaFxFiLhHMCmHg4B6LOUgQVqgnUIoJ3DDFz0Ui3VnUROM9dzY8w01XO6mcrXuDvMwFELeEG1VHf9fOK738WXvY4FIQiFaxqrqQY7s4ghjL7/0+1B3eTe5GbjVnua+Un4QASDHgAi1nuILMD7RLJ9Rg6+XgVAKcMp+/OE9/gCIJz8MhO+agOGPyLX1co9BolxyfkUcJeCcAcib0TNsSASZs/5l7H2DeAOwKAsbGjGWDuzsjuAfwIgbiPCmVCJDTvhch0DQgyzAGglxZuoNzoH3IVZogZAQCS9B6E1PwYYbNnW8MzaUzIQiM4ANGfe0H5QT9bXvyOAqorAv7FWhVtpPfUkDHs9AjAyHvaR+cie7BiwGD4C2BIve+NG10Wp0zGAf+zFZis6APOKoB8OxU9C2c4WlohBo6rXFUOQkiNAjSTORKL60AF57yZ49QjgXpeeZxfljF8DdwT4d30DcPDVvK76/EkAAAAASUVORK5CYII=",
+  "mobs_mc_villager_farmer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAgVBMVEUAAGAIaVUAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFARz01OjI3PTNARDw5PzVUWlBRWExdZVhnbmE2OjIzODBDSz8nLCU9QDhweWl7hHR2f286PzUkqla0AAAAAXRSTlMAQObYZgAAA3BJREFUWMPMk+F2gyAMRjknJAjYaevU7v1fdF8CdO2c2p+70lQoXGOgzlXIM7P3JBKAiHOd0n52Mhni9vAVCQTCRjBVdgXsOcbo2dbD0DV+BDEeC2IThPCnIJrhWMCHguMMvBYRVTx4heMMtkV8xZaj7QqoZPC0jRuBVWG7MOnCRLnS+u1bJmk7CIG2eiBqdJhKOj33fc59zMm65aNB1FAsTy6RNg6BXSnnGNWR6oANIqCM0k0abD4ibg04cOvaA2sGfXo8vwjWRlm1/salCl6/Lxm84s7gxFouunwYF+1gCDCEbwgwOQwD03i9TdPt+kk8DEGlvcL8RgaJIEjzYswJAsLgEMp1nkFi27F5WRe02Yqo1kD6l6BTgR0YzJ/v47KM9xkuO0DlRNN5Bv+Vr29OygA5QhCGor1GCOgaje7e/4JNAlhQxLrfQQaHPPID6FDkwCc9B2AQIXgw3QGGcRxe0/SqAIhNACVVgFE0if4FQCRt94ALC03A2UJO9FzEkwUNLFtcEuIsqDXLyqjLI876XAC8zwTLXkeLqQ0YDsoASOuXAAoK0Fe4BSzETAvsuMgMQQCrMAxAvRrAwrz8hVoCzwDAXNZP48Hsm4VuDVK6YgGauxABJE8XcMjgtI07YHu/t7KRXkM9a8yx13fr/Gdtn89WNouRl1rANOgC4EqFhe6lPkdawfdtjKPYdf4IVHUm5vOsdWVcV3XDWFtyVXcFQC8Av8qfQgEBvwEgRwDyNwCxgBwtCOChBQ3CWIO8s3Izdoi7LaKeiOC91MAHNEk+8vGHnCiDKI2qjwUAPDIcATTPEmCTpbMRabRz1LCgNagtSMRv59WyAyEIAzkZOHPryUDqgf//wO0LxF3rEpuYVLQjnQ6xpRhoLN0GelfaQdbK0j9IQ2oFRBBH4MRgDUA2TWGIVT1OQeLL2eeHHLxeX9OptSE2CS7GoXEwdZUMcwcASh1xIHRCmasw+tLNGzf0XdAUoJdxnP8Rv3kIBgCcAjgA0pq6AMZBT4Et5hxNByPeEH4BqODxYrxAAKwEA+hPNmcH3ynQDvY9UhlFB9Tg/wMwQxwu72PioAPkNwAhraQgFwOYOx2mK4nJ4wAGgJbxVKLMas9lBBU+HabujqVTSF1HixxchcSznir5aWx0jWe9wENrCvlNvCLw10O6PYwf2JXaJ+MK70EAAAAASUVORK5CYII=",
+  "mobs_mc_villager_fisherman.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAgVBMVEUAAAC0zCIAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFPWyk+RiBNWCg/RiBLVkRIVT9TYkpea1NARiBBSyNDTSM/SSFUYStGUSUyOhpIUiZldlhvf2Plq4sBAAAAAXRSTlMAQObYZgAAA0tJREFUWMPNl+F2ojAQhTnmIFkULKVKKUtpiCaevv8D7p1JsCIq0f7ZixASM19mJhFJFHlJWUJSLpcJtFxSCxQFS5Yg4LJMBJQ8A3AesD0IclAooPQEAJLkKYDXbwG/CMHZlz9JfFDe/mwaH4x9KvK/LGcBvID8DHgn5GBOhFlANS9ZOeaPazwOfVFVkRCpoHO1Xq9W6z/r1FXpxG0qlGqaRl4ITY1SylqlotRrBXNipBeaDSFOccSxyHJWRhU0QTGAAQB0TjabWLwUr2X5WryJeLNJCLomxXGAB6kAIN3uWNsUAIHGTeKOeQ/SmDIGQLXDZ8tJJGoi6CchZgGCg07F9v1lt3t534JFDcKtaDHvwf+q+oNVN15PAP5CANSsOUD7+dnahV2MAEpdBfReI8AnBHsbBNC6p3MCmHhwI4SrAAph7MGH1zSJkxC6r6/u/HRDDrMw1h4jaxpe6z0dNwBNMxDYe6odWNcB7YUGQO3HPwf0hgB0MbOAQ29tf6hPOFZvDABHMBjQ38tBfbD28GPKDjwGqK09zx/Z1xw+h3CeA6vwlFT0iPQheHcRwsUk+CQ6QI+DAcrJukKqGx5MpvEcYBeQByl86daata6k67X1P4iMrYeQ2AYXCkH7yl2ApX8H6f8llFpcC+Huj9rawXm6IytO+GkaXc0Vd54IclR48qRXfzxafTxSNFaPQwoD6AaA5qi1IYDRzwC0dQBtnwEgBG1dCAA8GAIZaZeDYWbxyzhBAgBYEaZpkIPGaBb8QWM0epkbXiDcCHICqBtt60tAv9/3MOFOcqhdAbgQKAfjEOQeUtLQ0jVSUU0qc4SMikLEJkrtCUAl1wwrEEBOk6G1ZOpqPdn3oQAIAGOtIQDXXIyPAXwIU8D5G+ItwFvb5hQClQ8DWvTEmVMIVDLPAd4GgH/rvQ7I8STIlcypSy4VVdvcPSBaDxiW140Q7igIwJs1jNyhQ8ZHmUkUp/6zAKj4zrtFXpJ5UaDIcFMNr/oBAFnlXdcRICtkWRRSAhEO4OyRyAMJD2RBYYQDKonR8/wbviPyqoAk3fzk4P400nak6HKyKskBiYYsc5uUoIWEjQsIfIXYAUoA73OCAW5nRPZsd2qJQnRvtxVi/w88Zs1LdcoBBwAAAABJRU5ErkJggg==",
+  "mobs_mc_villager_fletcher.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAh1BMVEUAAAAAAAAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFPWyk+RiBNWCg/RiBLVkRIVT9TYkpea1NARiBBSyNDTSM/SSFUYStGUSUyOhpIUiZldlhvf2Nqel45RTOOGCppAAAAAXRSTlMAQObYZgAAAt1JREFUWMPVl31zojAQxpnJIBlGTlPRlnJakmiC7X3/z3e7mwR5U0D/uLkHgYRmf+yzCUqjyOvda7VKQKtVFHFUNFsNIGGg5HkAxQOBBy0BcAdIkn8GeNUC550iLhTGI+E2jQtTD4C+RoOEyJq2DHIWpGxdwO5ofJaJIcAH9DUaL0TV9GwjBNiBbv5wtHMpRXWz2Bor5TDethxCvM+xamUYp7DFMct+kTLswCVQvF6v03RyFmBwstnEbCvedrs3kbN4s0kQukbF8SQAbsYAkO4PpH0KAAYXN4nbpjNIY1h5KQDeD/DZA48hgCUMHwk2CWBkOmX7j+3hsP3YAwsvMLeiWRL9ryo+SUXp9QTgNwgABWkKcDydjl9V9dUBSDkKUF4dwAlUgWYBtFa4TwPuWBgFDC18eg2LOLCAge3d3TLMQldnuLPG22t9xu0OoCwDgbLH3oU0Djj2FACFv38boAwC8GAmARdlrboUDY6kjAFADQwCqEc1KC7WXm6hlMAyQGFtu34YX5B9svCwBj5dsFCMzoIDKNgeAnoZDKaxAVy/v6/tHf7o1pq17ozHsfUfdP35ubZ3ioEDWtC+8xDwp6cxCw8f6iGACt5Mo+u504NvBNU5+d+84ai6trqu0Y3VXUvzALoEQFlrbRBg9DMAbR1A22cAYEFbZwEACy1gkHY1CDMLT0YDmQGAFWHKEmpQGk2CfOBi1FkjqqsBoCi1LQaA8zkMxrPrjQCcBaxB1wJEYIzBpWtU6NUgo2b9BrkQ+ACAGgQgzQRQ0hBm7dm1XHaY30wAORdGWNP2f/fpuwcQwqoXAEpwYfvx8wCcu8HcWuNbXIgFb/rS/1sgeZ77Zg4AkfHx9+QhoFEV3j8BkIlczgQEvzZYgFSyXOSZ4csAUAPfAlO73Q4cLJ6FhkU1kQunUWRdAF+4DlTWWFBQPkpgNsAtfAJQk2ZWmoUZqFYGBJibwb21JaMXJOcuItBfht3gypNJJV0AAAAASUVORK5CYII=",
+  "mobs_mc_villager_leatherworker.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAh1BMVEUAAAAAAAAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFPWyk+RiBNWCg/RiBLVkRIVT9TYkpea1NARiBBSyNDTSM/SSFUYStGUSUyOhpIUiZldlhvf2Nqel45RTOOGCppAAAAAXRSTlMAQObYZgAAAsxJREFUWMPVlw1zojAQhp0JkfB1ajlzpZ7WBCXa3v//fbe7SSgIxWBnOtMXEwgmT3Y3G8TFwolFnPMoYstlDFouFwuBWgQrclrGDBTPB/CIJ0kScRoPBOEVDkg8II4fBvAvACIMIkTxYReGQZwpZi3oLGPowBQHpixz8m1/vguArgy7Z3meZXmSpdS0BasAAB1pliUJMlJ3g26yAAv8hM6CPG3nDwSkTuB+bi3o634CpRzDxYpfpAIbcAvEARgAgM7xasXZevNUlk+b34yvVjFCcxTnARakDADpVpK2KQAY3FzF9giIAacV28o/Ej5bCiJSY4ZbgoUlEvTfPq+lXD9vgUUJZDOaxYufquqFVO2cHgD8BQGgIt0D7A+H/evx+NoDKDUK0E49wAF0BAUB6lpjuQ/4xIVRwNCFF6dhEAcu4MBusVP6VejrBDPXOH1dn/D4BLDbeQJZj60zaRywv5EHVG7+LkA3CMCquQs4a2P0uWpxJN00ALgAgwB6KgbV2Zjzx1AyYB6gMqYbPxxfkfvkwmQMnLngQjW6Chag4ZgE3FgwWMYWcH17u3YLfGlzzRh7xnos/72u7+/XbqExUKELtWtMAv7daMyFyU09BFDA22W0LXuaeCIIoUC9twljBr2gg1C2K6nbWyj83gQC6CR6AGqobwSI2QBlg/QRA3f9dYBNERt/oVzGkI1KjwBKVQ4Ap5PWhQSCKKRtEUHpEUBZigHgBFKywDllobCldXMBNTroN8gCgAsCuAOQAgFoNNqGArutCzBc6VCAdZnGt1EEXWYBfGp0AMdAgJJCXC6CgljglcQrDGLgi7qStCiyVw1TddoFY4zCORVctC5sZsRAqYv/e6Fmx8BaQOsI470FlAYzADS5JWh95yE66gLluMukRwC4gjB9WUAyPwrwLjwEaCiHcDdCweDNDqLd23aLz7bAPr2MNK769pfi/3Tru5kmCXgzAAAAAElFTkSuQmCC",
+  "mobs_mc_villager_librarian.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAk1BMVEXYdnIAAAD3O9gAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGHQ0NDFxcXPz8/Ly8tUWlBRWExdZVhnbmHIyMjHx8fNzc3R0dGurq5weWl7hHR2f29ARz3V1dXS0tLOzs6xsbHT09PMzMxo2O+pAAAAAXRSTlMAQObYZgAAA2VJREFUWMPUk1uWgyAMhnkIkWtRyui0W+j+9zdJEOtlPJ7TeZoPRYnhTwio1AxoRNQaus4QXaeUZdrnOlob9uiZzgBhDgJZKOVUADU65zTKfFKwu5CXGaB2TcCYjwXwDwKai0hV/HgJxyJuuSwi1AxW27jlNAPwPNFDmGnj9rSZp+VlRbYkorxXSK7A7iHGEKILXob15q4JJHrmJzdBXlPKiQSk+RCcYw0/G8RInZVgxaZkbZLgSycW1QLOGUS/xK8C6yoc6sKdn6Hlx5rBlp37LwfII5cLbpJUuvGATASS4FrgBHI2fY8w5Hsp9/wF2PeGRSODeClAwYAE/DgJoycBIGNvalscX696HzLwKDs2Tt8TXaMUkVUN8C8BlxnIgSH/8TFM0/AYSUsOUD3RYNR/5fnDSxmlOQjCQLjnAFYrGLQrLd7/dBtiEAqsW33YqWi1zk8yfEWS1BfrOkCR/gJ0fd/dh+H+CUCw3gA9akD9H0AXgLoFyapDrADBmA+ukCsg6f0kdqnwaQKMMGMkbD6dMGjUqgB0hYQR4QiEzTVGAvpBaKUBfwQVUG3A5lfGWk2EMbUhAPCMAEUA/WsGRLBWlUJAmF3Qd8VBVgDDTURAilBR/ATQBxmwn1rQHGJMIQK0OgJwE1RBdPK1tYzTPE/5MFFYQanmH2l6PKZ8nAZ8F9qLzFZh5MuHgK3V1jIe7Ai8X+e7trXVW+CcBGcMAEgcUAOe2aPXqwZ4BPjgvwowDqR3EAnXAC71cApA01IGDqgJ1imA8R4z8NFLtdyemyj3ZVmktfO8LOlhKt/g4TEDTy3gDdVye5p15ZcRIGexWtsEbHOGDOCn2DJWYRiGgejcqXsvm0EWGJn8/9f1TkppoUO1VYREMej5LMlOPo2AMUg4Ym8wXm+GpUmOaH2DCkAV2wDjNjxP2MJg4zUBjzGCAConQF6AXjC+CYhIwEHhsMnXCTi+cvAToNTBeCbMicVKaLgLkFH2WiohTxV5Aow24DG4/BLghOAi9BUoNoPmNLjLl5oe4Jb/vLJ7XuXWWAvgnNE0J6RflVA310ALwIVfmt3rwXxoKbQWYJXhikc+VAtrAvCKt9qK7KN1EawFkFbLZfDmQ50oRJa0BZhKYiZS3afDO9SMEKHZB7Ns73gbxXizkf5uTzSx4GehFp1XAAAAAElFTkSuQmCC",
+  "mobs_mc_villager_mason.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAeFBMVEUBAgAAAAAAAGAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFARz01OjI3PTNARDw5PzVUWlBRWExdZVhnbmE2OjIzODBDSz8nLCU9QDhrZNolAAAAAXRSTlMAQObYZgAAAq1JREFUWMPVlc2WoyAQhV0gsdX0JN1pQ5+DKxTe/w2nfiCK0aR0VnNJNHCsD24VmKKIUqXWuizV6VSBTqei+EAVYpVRp0qBqv0AXeq6rktN8UD4SJID6gSoqsMA/Q+AEpMIWTxs4TmJO6V4BbMySgMbDGxUG5X66f4WAI8qfLw9n9v2XLcNdfmLFwGAWtO2dY2MJg7QoBKsIE0YV3BuHvMLAU0U2D/zCnK930CNxnSpzz+kT+zAEEgDUACAh6vLRavr1/ft9v31o/TlUiH0jNJasIJGAaDp7qSuAYCCwUvFTZADTRXr7uYOn46SiNRK4ZFQso0Ez3e/1/v9+tsBizYQ72hVFf+remdBrk/aD7ABZKUAA+pAGcDaVYCLOg4AZ/h9D9iwIASkhQosdAvFiDw+aoCZLU5v7YDtFaDP4kfSOsAs1E+EfglwAQF4CW8Bo/PejQsLLgQGBAK4LCnLtI3ej/kSNgFYMAzl+yPG+/nkGN+TfbIwy8HWCtBCv1oFBjhoLwGLFTyVcQbILfAxhKv3fMfr2v5f7qxJDEALNnZeAvotrVgQAijhjzJyj28v3gjeT9dsKLcbgrecMG9zSzKA7QHQ45sCAcEeAVjPAOuPAMCC9WwBADstUH05B6myhJIDYEcEKC685oIl0dGycSMlQOpNYwsA5OAJMAz4MCv1VgBsAXOQW4CIYfDeYDhcsAeheC5Wsrh6FiIAQ44B3CMCY6KFXQDKAExvMCa6dzeUFEDZwxcq/8IBijcigJ8K4CfdADeOcsDNL/RcxlcAw0VkGVg6AKDGckAmgx8HKTVBCHDUMItuWgFnZBfAOGcm/9jZeIk+AQK1mLYZwO0BGETgbpoAH2IAi7eyCRNAaoGNh/jnngB0LJxwK/vFZnzzT7RxFibN/ifFp3FLkvi/dgLa+yI/rQYAAAAASUVORK5CYII=",
+  "mobs_mc_villager_nitwit.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAh1BMVEXwVQBXXD4AAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFPWyk+RiBNWCg/RiBLVkRIVT9TYkpea1NARiBBSyNDTSM/SSFUYStGUSUyOhpIUiZldlhvf2Nqel45RTMLfR6SAAAAAXRSTlMAQObYZgAAAxdJREFUWMPVl+12oyAQhj0HiV9x09RNttYtCjRiWu7/+nYG0Gq0EbN/dl+KHCjzMDOAtkHgREJKaRiS3S4C7XZBEKMCb4VOu4iAou0AGtIkSUJq7IEQ9/IHJD0gih4G0L8AhJhEyOLDIcyTuFHEejDaRl/DFA1Tkjn1/b5dBcBUgtOz/T7L9kmWmq6t+PAAmJJmWZIgI3UDZpB4eNAv6DzYp8P6noDUCcLfWw+mWj9AKcV0kfyHUY4dGAJRAHoAYHJ0OFDydHwuiufjT0IPhwihexSlHh6kBADp6Wx0SgFAYPAQ2eKRA2p27HT+dYafk0kiUiOCV4L4HSSYf3p5Op+fXk7AMgfInmgSBf+rylejsnJ6APAbBIDSaA3wxthb3TT1BMD5IkA4TQAM1IC8AFIKrOuAb0JYBMxDeHWaJ3EWAhqOq12y34Wp3mFlictL+Y7lG0BV9QTjPfYuRsuAtxv1gNKtPwaIFgH4aFcBF6GUuJQDzki0LQA6YBiAuJeD8qLU5cvUOLANUCo1zh/alyZ8E8LdHDh3IYRycRcsQEC5C7jxYLaNA+D68XEdV/ilPWtK2RafS+e/1/Xz8zquxgYeGIJ0nbsAfaOlEO5e6jnAJHzYRtuzzZ03gp40RkrNZomuU7LrMBolpyGxSfMdQFYAqDopWwS08hGAVBYg1SMACEEqGwIANoaARtLmoN9ZuBkDhK0mEU9EW1WQg6qVRuAPDAYaX4jaWTLX07iA1jNAWUlV3gKMmHkf1swdBoRAXQgBczANwZnUtVJN3Z+mGt/Rtfb6Bg0mIwCrjdgWAENAH4ElsC0eMAv4yoFJpifAZqwHWMh4a9YAZu4AcNto5Qng8Dc9Y8djnj8E6Dre5THnR94VPIfSoTio67wAOLVQORQeqwIKDigQV9w3iWDBWF5AILFmNpEFbiPbkAPukljEuP8sBmvvg1Sb/4zsSQSzosjjom6EgA+VF4BZDxoEgA0TEAhcBQA0ngDNOdozpRheIFFocIAJwTwBcPc510zjhwQa3caaM92CtF8Ohs+OUraNV75E/5z+AHouzTbuuFeIAAAAAElFTkSuQmCC",
+  "mobs_mc_villager_priest.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAeFBMVEUAAAAAAAAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFlKUliKElUWlBRWExdZVhnbmFUIj1XIz9RITtrK049QjpbJUJAGi9cJkQUaWpfAXWNAAAAAXRSTlMAQObYZgAAAs9JREFUWMPVl2uv4iAQhpuQWtPIUbDakxDgQw/Z//8P950BPLa2gu4lu6+mI7U8MjNcxqZJ2iftdh2026U7+etmmgw0Tc2WboBOQN0jwFhrQSgCuD8IuZ0R6O+cM6YG0HWrADcMzv4KYKgGbLjgqL95IYhzTca5qiB+p3EB2ErjviDKHidwwxYBltJn+Yogpk+xM9siIA89/mT8RNebSxUuOAofTQPOIzfJBcf3m/2Ztd+yTUltj1fbCvnBktTALag9HA59XwTg4e54bMVJ6fNZq0G0x2NH0AOpbStG0AsA+suVdekBELh57OKrPIK+xczrARiveF/AEwQQnaAlIYoAwU734vJ5ul5Pnxew6IaIM1qUR/CvSnEODkomvQ9QrBKAnqGlUQOwSQ8AmtlVAFoJsx/7XYANFx6C+OCC2hD3XyhvQ7SaSRsAKRPhvhUBafiWThhrC4CVlsWGguMBgMHeANNCucvE7yUAnaVMkBSzR8C2LG2rUtL2+iaAck0Q2gwRh6eA7MIsC+jIR+x9EF8ZwWoal4BphOiqVbS4hkBfhLC6kKY1Ai6T0tOYGiFpFfBjobWhP13UNYCsJzuCmRnWyoitPePAoiBGe//VzGwBMIvGM+YRJhOsdO8A5BgBsG8AMHS5jy6wfQkQCwrumAqMGaQcRFoHMrpATtjsTpMKjwRILeOheUlnk+sIXgZwQJtYtGgOiNOphIlFlFlxgdKXXYipTOWOcuM4qFz8xHLGVJ1BuYsKQbkE4HW/3Lo3AWnQLgSqRHMrFlB1AMNODyEMeZ3fisg6QIxYBkTIfWpKAH72BvjebsxfA6zH4GEe/Nkgzl0wsTx2tnIepJkZATxfzWoNsAlw3tPjBCCLFs6PwfvhvuB4Imu95z8TANAfCrTo9AFgqARo7zV6yBAk+lALAOm9rARo7b+0ltqH4GH0F7e+IF1XHfosAJb6P4rin91vuJivf4sTAAAAAElFTkSuQmCC",
+  "mobs_mc_villager_sheperd.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAh1BMVEUAAAAAAAAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFPWyk+RiBNWCg/RiBLVkRIVT9TYkpea1NARiBBSyNDTSM/SSFUYStGUSUyOhpIUiZldlhvf2Nqel45RTOOGCppAAAAAXRSTlMAQObYZgAAAv5JREFUWMPVlg1z2jAMhrnzJfHlyGjahZFmpdiGyLT7/79vkmzng3xCb7frG+wgN3psSQ71ZuOlrLL4UXGcoOJ4s5GkzWpZK5WU1saJQCUPACQBpGV/JMig9QAKgQFJ8higWcGXAQ+G4KrQSeKdUq4KnTKudmSpAGht19bETrIhBx2biWsB0j3fV3dJtqpc8wskATYKgeZTbhfwPdi8M7zIKcuVbUcagApE659vbHo1WnGNugMeEKV4RZHIfrAyMnAIFW232zRdzAE+nOx2kXjKn19envOfItrtEoJuSVG0CMDJBALSYs8qUgQIHNwl7lpeQRrhzksR8GuPnwJ5ggAiEfRKiEWA4KBTURye9vunQ4EsGhBuR4tk811VvrLKyusBwG8UAkrWEuDteHx7P53eewClRgHaqwc4ok6oVQBjNLVlwEQIo4BhCK9ewyQOQiDHbnNThir0dcaZDU1vzJmuCUBVBQKvnqwLaxzwdqMAKP38XYCuCUBdvQi4aAB9KRscS9c1AiwyGKDnclBeAC6tKy/gPkAJ0M0f+ZccPocwmwO/XAyhHK2CA2i8ZgE3KxiUsQFcPz6u3YZ/dHsNwN2pH9v/QdfPz2u3sQ92FILxxizgz43GQph9qYcATnhTRme528wvQp63vRfA4CltLRhrKRow/ZDy3m0KYCoEVNaYmgC1eQRgwAEMPALAEAy4EBBwZwjkZFwOQmXxzWggKwC4I+qqwhxUtWHhenAQM88KxehpACgrA+UtQJ/POg9lDNYIwIVAOeiHgB7OB8D5dwir/gd9HUCLbgHBugdAagHe+rcAPJ0BtQ4gY0CWNxZ/pvytP8pCB5BlANg1FmvK358WpSUCT5oHgLPoSDsNUDYcRvkoXhRFHMfbbRx6HEAU4K2YAEg+DkvrACFhtILwnY6100kEBEgHgClANQuwY4CMfoUDgTI0DVAOYPsh9ADz+6BNomRAxjX3ALy8TW2pjLwRQs0ZcKOZjURLcBvpcMgybJoAmr46m9ph1Vb+7/oLmP/j8FB98VYAAAAASUVORK5CYII=",
+  "mobs_mc_villager_smith.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAhFBMVEXMqNMAAKAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFARz01OjI3PTNARDw5PzVUWlBRWExdZVhnbmE2OjIzODBDSz8nLCU9QDg6PzUCLCoAJiYAICAAGhlf56+nAAAAAXRSTlMAQObYZgAAAtdJREFUWMPVleuSojAQhakKkQGc1ZlZ3AkBHaPBXX3/99u+JMhNDe6PqT2IqVDpL306CUSRk4illHEsFosEtFhE0QsqClbstEgEKJkPkLFM0zSWFA+EF69wQOoBSfI0QP4DIMYiQhWftjAu4kwJzqCzjKGBGQZmInfyfd8+BMBQgcPz5TLPl2meUZdv/AsA0JXleZoiI3MP6KEIyMBP6DJYZu38gYDMCewvOYO+Hm+gTGK5xOsP0it24BFIAjAAAIOT1UqK9dv7x8f7208hV6sEoUuUlAEZZAIAWbEhFRkABDxcJXwF1EDSihWbXxv4FVREpCYCj4QI20gwvvhcbzbrzwJYtIF4R4sk+l+lSg0qVeU0H6BrkFaVIj0CbHe77dd+/9UDaD0JME49wA60BwUBtDZ4PwbcsDAJGFvwiY6LOLKAgd2bp1Q8SvV1gJk1Tq/1Aa8bgKryBMoee0fSNGA7kAcoN38XYGoE4F/9EHA01pqjanHMrGsANMAgANfBlCTjWz/4aO3xGkoJTAPK8gQqjWvLNsbabv0wXpF9stCpgRmoTRcsqMlVYICB666FQQajZWwBQwsGjyHuNWu5xf+p/T/cWVcxAC1o17kLULfUsXD3UI8jqeDtMnKPmztvhN+9hmTt2G7TWN006MbqvqUwgK4AUDXwpkBArZ8BaMsAbfuAP73mjgVt2QIAehbOvWYKQOvLNfArCyejhQQAYEfUVQU1qGpNgnzgIW9l4wHcM64ZAVSlrRoCzOFgzJkI5zP3DJ8NM2EBa9C3ABEQc3binjk1oJMJ+gZ5wAV+FwegcwUnKwzAFiAeb2+BT2ggAEUAtMBy74ZAAFaMw8EC9aZW4TaAl5HCL+0y3jn/NwAXNvEMgGvgPLQ1GO2DAMDl+SKiBV5H417Q/IKdlcGlu4zza2DOE/Fz9oGzbsq2gGZWDa5Bva9U6D5wn6T26zS3iN+fwW2FxP8FV3XNKgT8fr8AAAAASUVORK5CYII=",
+  "mobs_mc_villager_toolsmith.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAeFBMVEUAAAAAAGAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFARz01OjI3PTNARDw5PzVUWlBRWExdZVhnbmE2OjIzODBDSz8nLCU9QDg6PzU5EHb5AAAAAXRSTlMAQObYZgAAAvpJREFUWMPVlWu3qiAQhlsLydQ67UvlFtS9I3H//3945gLeK+x8Oi8pCxbzMDMMttk4iUhKGUViu41B2+1ms0NtghU5bWMBitcDZCSTJIkk2QNh5xUOSDwgjl8GyH8ARJhEyOLLIcyTuFKCPRgcY6hhioapyJz82PdPAbBU4PJsv8+yfZKlNOQHXwEAammWJQkyUjdBkyLAA7+h82CfdvsHAlInCH/PHoz1vIBSiekShz+kAw5gCiQBGACAxfHxKMXb+8fn58f7ScjjMUboHiVlgAepAEB6vpDOKQAETB5jbgE5kHRi50t+gd+ZkojUWOCVEGGFBOvPX2+Xy9vXGVhUQFzRIt78ryqUBqmidFoP0BVIF2VBegaov7/rn+v1ZwTQehFgnEaAb9AVFATQ2uDzHHAnhEXAPATv6DyJsxDQcPjwlgWvKsa6wc4at9f6hu0OoCw9gbzHUUNaBtQTeUDh9h8CTIUAfFVPAY2x1jRFh2NmVQGgBQYBOA9GkYzv/eLG2qY3JQeWAUr9gpRxvepsrB3mD+0LCp9CGOTATNS5CyEUi6fAAAPtYQgTD2bH2AGmIRi8hlhr1nKP76X6n1ZWLwZgCNoNHgKKexqE8PBSzy0p4d0x8oi7B18Ea/v3aGocbtta3bYYjdXjkMIAugRA2cKXAgGVfgWgLQO0fQUAIWjLIQBgZQh0vpwDf7JwMzpIAAAqoipLyEFZaRL4A5NcysYD/Ai7MYEARaltMQWY2w1OxcmP8G5MABwC5mAcAljcbtbWaA4vHAGgBS1kcfEuMCBHk7wD4MUKBZhuS9zUhbAKQBmA7XMEWB6rA+gUCFCUvRxEuVQIOJxAdRDA9gdge53g+9w04YCTnYgDCQXUfIisGlwHABRJOGCkGn8GUpq3gQBDDbNoeg84I6sAtTF1H78xub3zEZ0BWmoubQOAWQPIEYHV5AoBbuTOKLMmiVzKeesBamcDATnb5ywG4L8UfhMCS9lOirH/nwwDKDUuhMH/ZPBtvKcQ+78QmM/GeoDnGQAAAABJRU5ErkJggg==",
+  "mobs_mc_villager_weaponsmith.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAhFBMVEUAAAAAAAAAAACRemGZgWedh2+FcFmLdV1+XTqdhm2YgWiXgWechm6hkX83NzeEcFp7bFu1tbW4lQmefVmUgm5yZFSCcmBbT0OFdGFARz01OjI3PTNARDw5PzVUWlBRWExdZVhnbmE2OjIzODBDSz8nLCU9QDg6PzUCLCoAJiYAICAAGhnH8z1uAAAAAXRSTlMAQObYZgAAAvFJREFUWMPVltmWojAQhjkHIgI69qLSBKXtQDEXvv/7TVUlgbBpsK/mR4nhUF8tqYBBYBRGQogoCjebGLXZBMGWFHgrMtrEISpeDxCRSJIkEmyPhK2VPyCxgDh+GSB+AYioiFjFl1OYFnGlQh2Bs4y+hikZpmFmZOd2fArAW0O6PdvtsmyXZClP9ZdOHgA+0ixLEmKk5gJfDD0isA5NBLu08+8JSI0w/Z2OYCiAlmQGMwLAXf+4ByIVVK5w/4e1pwleQgkEpqnjC+53tJtEINL4cBDh2/vH5+fH+zEUh0NM0B1JiGBEaCctjJkiID2dWacUASFePMT6cO9tZwLAGghesdM5P+PnxEUkahzSlhgWsYWFRsL7T19v5/Pb1wlZ3EC6o8M4+F9VyBIli4vRekB5RZXFpWA9A1Tf39Xt5+c2AJTlLEAZDQDfqB+UF6AsFX2fAxZSmAVMU7CBTos4SYEM3a92Wei7iqFq9FyS+7Ks6VgAXC6WwNHTrGHNA6qRLKAw/l2AuhKATtengEYBqKbocJp5vSKgRQYDdB2UZCk72psbgKY35QDmAVL+RUllRtnZALj1I/uC0+cUnBqokbpwMYVidhU0QOHxMIVRBJNl7ADjFBRtQ+o1AD3Sea7/x53VSwMohdJMHgKKJTkpPNzUU0sueLeMeqaHB08EgP48uDTQnd9I+HYweh3AA7wOgN8DLnCp63UATtqtgfm9CgA2dhfALawswM5oGBK0TV1DPQaoulYKjOyM9sYMoK4p+RGgRgFUZF6RCyTYvyFe7yADyMkk7wC0sXwBqnNJTk0KqwBcAXSf858nPZd71NETILl6OYprKQmwP6IqLwD0CwC9jvh8bpp1gIF0Il6A6ni8uaY4x9VUbesNALj1PrkXKrTHirTeEVTTCHRFPFdhLn+lclh4iC4DKG4HoNYBWurlrhFwR26VXAHgouVcOAOQW/AFSNPIDoDeUvRMWF1E1afADxbPCORwEZz3pPduXJKP/T8tettEAvXFaQAAAABJRU5ErkJggg=="
+});
+
+// VoxeLibre uses one 32x32 atlas for the complete lectern mesh, while
+// Minecraft splits the equivalent block across several 16x16 textures. Keep
+// the known-good target atlas as a fallback when a pack does not provide all
+// of the component textures.
+const EMBEDDED_LECTERN_FALLBACK = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEG0lEQVRYw7WWy25jRRCGv6q+HNuJIXNhBGLDG7Bhw5vwKIgVz8eeJ0AgzQAzmTi2z+lLFYvjBJJ4WDhyS1ZLR/rcVdV/V/3y8w/feYzKNE7ElLj+cMPr159zs61crQe2+wkQBKilMSwym+uPrC5WGJBz5lTeHTSlgAMalKACIjhCmSqtNrQby0VmfbGgixCjIiKsLpdYN+JzeDNiCIq1zpAiLvOflNoAqLUTFhnM6MDmdk8KQneh946oElRp/XReRRUBfn93QxknQlCGnABhtRpQmbMCuFqvyDkh3jGHaT8h4XS+jhMKIKK8eXVJypGxNNwMUwXg3dtrYgyU0tjsJlarBZvR0EMZcT+Zv1iviNY7rXeCKm7GfuqICNNY+fPtyJuvXoJ1htXAVal8+Puazy4yuFNLpXc7mS+loogQgwKOibJeJhBwN7748iUBKKXh3ajduLhckWMAd/KQkOfwORFbqYzNCG5oigCoCCowTQVCxBAwY4iB3b4w1c46CNOuE2Ol9NP4za6hKSeWQyKFgCAEFWpt5BjIKTLEAL1DN9ydIUfMjN3tRGuN/Ay+907s3XAzuvusSHc0KAggQjcjp0g1iFFBhJwCi4sBnQK9d9z9JD7WhjoQQ+BmX4lBENW5sajiDuC4GUOObKdGUOHjbQFzRMBFnsVrEJlLo9C7EYKAg+BziULgw2Y3N5ip0ppxdZlBlN2uEIST+ZvNRHQBN5AY0SA4Cm6U2iml8fH9LeurS6apMuSIRMXdcTfSkPFZ8ifxmhJ618+v/7oGZgEJc1mHRWb94pKUFFSIQfBuIIIIBAHr/XReBVVVdmPl9ZurORNAVGit3R/SuhODoqLzHZvRmmGAhnAyD6Dm3EeDKB9v536+Xi9ph6Hi7ux2E/vaUZkFlobEuBsx95P5aTcSU1IEx2VW7GqZ2Gz2iERyipgoKxX25uzHLeu2YKoNHHJOpBhQOIlPQ0LLVLndTfz2x3tAyFFZLAda6+y2I6VU3l9viTny4rMlMSVCCHPrdWeayum8OXEYMhICizjP6N7nSaUqrC4GOpCDYma4OaUUamngTlBhsRgIMT7hf/n1e0Tg629eAcB2vgo286v56cdvwUFb77gZooIGpbQOAubQzcAcFchDBhE0BIYh4aqEEGjtOA9Qu9ANzOX+54ddVdGgxDI1YlRK7UR0nmx3wgrhX083Ncwc74b1xrQdsYPPO8bDfRyzEB/td+tsntAfHSaP9vsAQpidy5DiweN9wtN1Y3O7Zz+WJ57wU/yxZf4whDN6wqfZHltn84T/t/57NWfzhHO5nx4u2KMKnMkT4nAo4qPsH348myfkMObvSi53ovDHz/BMnvCoCB1UHkZwPk94rAfI03dxNk94VP2HDukPGtGZPOGD9ut+tCIA/wClWWI/qcmH2wAAAABJRU5ErkJggg==";
+
 // Minecraft stores zombie-villager profession clothing as transparent
 // overlays. VoxeLibre's six mob texture slots are complete 64x64 images, so
 // compose the base skin and profession overlay before writing the output.
@@ -280,6 +312,34 @@ const ZOMBIE_VILLAGER_PROFESSIONS = {
   "mobs_mc_zombie_librarian.png": ["entity/zombie_villager/profession/librarian.png", "entity/zombie_villager/profession/cartographer.png"],
   "mobs_mc_zombie_priest.png": ["entity/zombie_villager/profession/cleric.png"],
   "mobs_mc_zombie_smith.png": ["entity/zombie_villager/profession/armorer.png", "entity/zombie_villager/profession/toolsmith.png", "entity/zombie_villager/profession/weaponsmith.png", "entity/zombie_villager/profession/mason.png"]
+};
+
+const VILLAGER_BASE = [
+  "entity/villager/villager.png",
+  "entity/villager/type/plains.png",
+  "entity/villager/type/desert.png",
+  "entity/villager/type/jungle.png",
+  "entity/villager/type/savanna.png",
+  "entity/villager/type/snow.png",
+  "entity/villager/type/swamp.png",
+  "entity/villager/type/taiga.png"
+];
+const VILLAGER_PROFESSIONS = {
+  "mobs_mc_villager_armorer.png": ["entity/villager/profession/armorer.png"],
+  "mobs_mc_villager_butcher.png": ["entity/villager/profession/butcher.png"],
+  "mobs_mc_villager_cartographer.png": ["entity/villager/profession/cartographer.png"],
+  "mobs_mc_villager_farmer.png": ["entity/villager/profession/farmer.png"],
+  "mobs_mc_villager_fisherman.png": ["entity/villager/profession/fisherman.png"],
+  "mobs_mc_villager_fletcher.png": ["entity/villager/profession/fletcher.png"],
+  "mobs_mc_villager_leatherworker.png": ["entity/villager/profession/leatherworker.png"],
+  "mobs_mc_villager_librarian.png": ["entity/villager/profession/librarian.png"],
+  "mobs_mc_villager_mason.png": ["entity/villager/profession/mason.png"],
+  "mobs_mc_villager_nitwit.png": ["entity/villager/profession/nitwit.png"],
+  "mobs_mc_villager_priest.png": ["entity/villager/profession/cleric.png"],
+  "mobs_mc_villager_sheperd.png": ["entity/villager/profession/shepherd.png"],
+  "mobs_mc_villager_smith.png": ["entity/villager/profession/armorer.png", "entity/villager/profession/toolsmith.png", "entity/villager/profession/weaponsmith.png", "entity/villager/profession/mason.png"],
+  "mobs_mc_villager_toolsmith.png": ["entity/villager/profession/toolsmith.png"],
+  "mobs_mc_villager_weaponsmith.png": ["entity/villager/profession/weaponsmith.png"]
 };
 
 // DATA.mappings values may be a source-path fallback list. This is used for
@@ -475,6 +535,42 @@ async function pCompositeTexture(baseU8,overlayU8,fallbackDataUrl){
   if(fallback)ctx.drawImage(fallback,0,0,w,h);
   if(base)ctx.drawImage(base,0,0,w,h);
   if(overlay)ctx.drawImage(overlay,0,0,w,h);
+  return canvasToU8(c);
+}
+
+async function pLecternTexture(merged){
+  // The target model is a hand-packed 32x32 atlas, not Minecraft's 16x16
+  // block tile. Start from the complete VoxeLibre atlas so the book and all
+  // UV islands remain valid, then remap Minecraft's separate lectern parts
+  // into the target wood islands. This also gives a safe fallback for packs
+  // that omit one of the modern component textures.
+  const fallback=await dataURLToImage(EMBEDDED_LECTERN_FALLBACK);
+  if(!fallback)return embeddedPngToU8(EMBEDDED_LECTERN_FALLBACK);
+  const parts={
+    planks:await u8ToImage(merged["block/oak_planks.png"]),
+    base:await u8ToImage(merged["block/lectern_base.png"]),
+    front:await u8ToImage(merged["block/lectern_front.png"]),
+    sides:await u8ToImage(merged["block/lectern_sides.png"]),
+    top:await u8ToImage(merged["block/lectern_top.png"])
+  };
+  if(!Object.values(parts).some(Boolean))return embeddedPngToU8(EMBEDDED_LECTERN_FALLBACK);
+  const c=document.createElement("canvas"); c.width=32; c.height=32;
+  const ctx=c.getContext("2d"); ctx.imageSmoothingEnabled=false; ctx.drawImage(fallback,0,0);
+  const tile=(img,sx,sy,sw,sh,dx,dy,dw,dh)=>{
+    if(!img)return;
+    const scale=Math.max(1,(img.naturalWidth||img.width)/16);
+    ctx.drawImage(img,sx*scale,sy*scale,sw*scale,sh*scale,dx,dy,dw,dh);
+  };
+  // These rectangles are the wood regions used by
+  // mcl_lectern_lectern.obj. The 22..32 by 18..32 island is intentionally
+  // untouched: it is the purple book and its paper, not lectern wood.
+  tile(parts.base||parts.planks,0,0,16,16,14,0,18,18);
+  tile(parts.base||parts.planks,0,6,16,2,0,0,14,3);
+  tile(parts.front||parts.sides||parts.base,0,0,8,13,0,12,10,20);
+  tile(parts.sides||parts.front||parts.base,2,8,13,8,10,20,12,12);
+  tile(parts.sides||parts.front||parts.base,0,0,16,8,0,20,10,12);
+  tile(parts.top||parts.sides||parts.base,0,1,16,13,0,12,22,8);
+  tile(parts.planks||parts.base,0,0,16,16,10,20,12,12);
   return canvasToU8(c);
 }
 
@@ -1520,7 +1616,7 @@ async function convertTextures(file){
   const out=new JSZip();
   const mapKeys=[...new Set([...Object.keys(MAP),...Object.keys(EMBEDDED_MOB_TEXTURES)])], nCol=Object.keys(COLOR).length, nArmor=Object.keys(ARMOR).length,
         nChest=Object.keys(CHESTS).length, nCfire=Object.keys(CFIRE).length, nHollow=Object.keys(HOLLOW_LOG_TEXTURES).length;
-  const total = mapKeys.length + nCol + 1 + nArmor + nChest + nCfire + nHollow + N_SMOKE + 1 + 1 + 2; let done=0, copied=0;
+  const total = mapKeys.length + nCol + 1 + nArmor + nChest + nCfire + nHollow + N_SMOKE + 1 + 1 + 2 + 1; let done=0, copied=0;
   const tick=(msg)=>{ done++; showProgress(done/total); if(msg)setStatus(msg); };
 
   setStatus("Copying block/item/mob textures…");
@@ -1535,10 +1631,25 @@ async function convertTextures(file){
     if(zvCandidates){
       const baseName=ZOMBIE_VILLAGER_BASE.find(name=>merged[name]);
       const overlayName=zvCandidates.find(name=>merged[name]);
-      let bytes=null;
       const fallback=EMBEDDED_ZOMBIE_VILLAGER_FALLBACKS[o];
-      if(baseName && overlayName) bytes=await pCompositeTexture(merged[baseName],merged[overlayName],fallback);
-      else if(baseName) bytes=await pCompositeTexture(merged[baseName],null,fallback);
+      const bytes=await pCompositeTexture(baseName&&merged[baseName],overlayName&&merged[overlayName],fallback);
+      if(bytes){ out.file(o,bytes); copied++; }
+      tick();
+      continue;
+    }
+    const villagerCandidates=VILLAGER_PROFESSIONS[o];
+    if(villagerCandidates || o==="mobs_mc_villager.png"){
+      const baseName=VILLAGER_BASE.find(name=>merged[name]);
+      const overlayName=villagerCandidates && villagerCandidates.find(name=>merged[name]);
+      const fallback=EMBEDDED_VILLAGER_FALLBACKS[o];
+      const bytes=await pCompositeTexture(baseName&&merged[baseName],overlayName&&merged[overlayName],fallback);
+      if(bytes){ out.file(o,bytes); copied++; }
+      tick();
+      continue;
+    }
+    if(o==="mobs_mc_zombie_villager.png"){
+      const baseName=ZOMBIE_VILLAGER_BASE.find(name=>merged[name]);
+      const bytes=await pCompositeTexture(baseName&&merged[baseName],null,EMBEDDED_ZOMBIE_VILLAGER_FALLBACKS[o]);
       if(bytes){ out.file(o,bytes); copied++; }
       tick();
       continue;
@@ -1547,8 +1658,6 @@ async function convertTextures(file){
     const src=candidates.find(name=>merged[name]);
     if(src){
       let bytes=merged[src];
-      if(o==="mobs_mc_zombie_villager.png")
-        bytes=await pCompositeTexture(bytes,null,EMBEDDED_ZOMBIE_VILLAGER_FALLBACKS[o]);
       if(/^mobs_mc_horse_/.test(o) || /^mcl_mobitems_horse_armor_/.test(o)){
         const fallbackKey=HORSE_LEGACY_FALLBACKS[o];
         bytes=await pHorseLegacyTexture(bytes,fallbackKey && EMBEDDED_HORSE_LEGACY_TEMPLATES[fallbackKey]);
@@ -1570,6 +1679,8 @@ async function convertTextures(file){
     if(src){ const b=await pHollowLogTexture(src,EMBEDDED_HOLLOW_TEMPLATES[cfg.template]); if(b){out.file(o,b);copied++;} }
     tick();
   }
+  setStatus("Building lectern atlas…");
+  { const b=await pLecternTexture(merged); if(b){out.file("ITEMS/mcl_lectern/textures/mcl_lectern_lectern.png",b);copied++;} tick(); }
   setStatus("Tinting water, vines, plant icons…");
   for(const o in COLOR){ const s=merged[COLOR[o].src]; if(s){ const b=await pColor(s,COLOR[o].color); if(b){out.file(o,b);copied++;} } tick(); }
   { setStatus("Grass shadow…"); const s=merged[GRASS.src]; if(s){ const b=await pGrass(s,GRASS.opacity); if(b){out.file(GRASS.out,b);copied++;} } tick(); }
@@ -1702,6 +1813,58 @@ function handle(file){
     convertTextures(file).catch(err=>{ console.error(err); setStatus("<b style='color:#ff5a5a'>Error:</b> "+(err.message||err)); });
   }
 }
+
+// Subtle interactive orange particle field. It stays behind the converter UI,
+// uses no external assets, and responds to the pointer without competing with
+// the upload controls.
+(()=>{
+  const canvas=document.getElementById("bgCanvas"); if(!canvas)return;
+  const ctx=canvas.getContext("2d");
+  let w=0,h=0,dpr=1,raf=0,points=[],pointer={x:-9999,y:-9999,active:false};
+  const orange=[255,140,26], light=[255,190,104];
+  function resize(){
+    dpr=Math.min(window.devicePixelRatio||1,2); w=window.innerWidth; h=window.innerHeight;
+    canvas.width=Math.max(1,Math.floor(w*dpr)); canvas.height=Math.max(1,Math.floor(h*dpr));
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    const count=Math.max(26,Math.min(88,Math.floor(w*h/14500)));
+    points=Array.from({length:count},()=>({
+      x:Math.random()*w,y:Math.random()*h,
+      vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,
+      r:.7+Math.random()*1.7,phase:Math.random()*Math.PI*2
+    }));
+  }
+  function rgba(c,a){return `rgba(${c[0]},${c[1]},${c[2]},${a})`;}
+  function frame(now){
+    ctx.clearRect(0,0,w,h);
+    const pulse=now*.0007;
+    if(pointer.active){
+      const glow=ctx.createRadialGradient(pointer.x,pointer.y,0,pointer.x,pointer.y,210);
+      glow.addColorStop(0,rgba(orange,.075)); glow.addColorStop(1,rgba(orange,0));
+      ctx.fillStyle=glow; ctx.fillRect(pointer.x-220,pointer.y-220,440,440);
+    }
+    for(const p of points){
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<-20)p.x=w+20; if(p.x>w+20)p.x=-20;
+      if(p.y<-20)p.y=h+20; if(p.y>h+20)p.y=-20;
+      if(pointer.active){
+        const dx=p.x-pointer.x,dy=p.y-pointer.y,d=Math.hypot(dx,dy);
+        if(d<125 && d>0){ const push=(125-d)/125*.018; p.vx+=dx/d*push; p.vy+=dy/d*push; }
+      }
+      p.vx*=.998; p.vy*=.998;
+      const a=.20+Math.sin(pulse+p.phase)*.08;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=rgba(light,a); ctx.fill();
+    }
+    for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++){
+      const a=points[i],b=points[j],dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy);
+      if(d<118){ ctx.strokeStyle=rgba(orange,(1-d/118)*.105); ctx.lineWidth=.7; ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+    }
+    raf=requestAnimationFrame(frame);
+  }
+  window.addEventListener("resize",resize,{passive:true});
+  window.addEventListener("pointermove",ev=>{pointer.x=ev.clientX;pointer.y=ev.clientY;pointer.active=true;},{passive:true});
+  window.addEventListener("pointerleave",()=>{pointer.active=false;},{passive:true});
+  resize(); raf=requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
