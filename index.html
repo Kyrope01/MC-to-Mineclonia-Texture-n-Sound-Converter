@@ -188,11 +188,15 @@ const EMBEDDED_HORSE_LEGACY_TEMPLATES = Object.freeze({
 });
 
 // These aliases cover the exact texture slots used by VoxeLibre's current
-// pig.lua, horse.lua, sheep.lua, spider.lua, and villager_zombie.lua. The
+// cow+mooshroom.lua, pig.lua, horse.lua, sheep.lua, spider.lua, and
+// villager_zombie.lua. The
 // renamed Rover and Stalker textures are intentionally absent: their edited
 // model textures are embedded above. Arrays are tried in order so classic,
 // legacy, and newer 1.21.x layouts work.
 const VOXELIBRE_MOB_MAPPINGS = {
+  // 1.21.x split these into temperate/warm/cold files. Keep the classic,
+  // alternate, and flat legacy names too; the first file present wins.
+  "mobs_mc_cow.png": ["entity/cow/temperate_cow.png", "entity/cow/cow.png", "entity/cow/warm_cow.png", "entity/cow/cold_cow.png", "entity/cow/temperate.png", "entity/cow/warm.png", "entity/cow/cold.png", "entity/cow.png"],
   "mobs_mc_pig.png": ["entity/pig/pig.png", "entity/pig/temperate_pig.png", "entity/pig/warm_pig.png", "entity/pig/cold_pig.png", "entity/pig/temperate.png", "entity/pig/warm.png", "entity/pig/cold.png", "entity/pig.png"],
   "mobs_mc_pig_saddle.png": ["entity/pig/pig_saddle.png", "entity/equipment/pig_saddle/saddle.png", "entity/pig/saddle.png", "entity/pig_saddle.png"],
   "mobs_mc_sheep.png": ["entity/sheep/sheep.png", "entity/sheep.png"],
