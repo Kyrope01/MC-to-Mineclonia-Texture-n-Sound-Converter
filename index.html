@@ -1823,7 +1823,7 @@ function handle(file){
   const VERT=[
     "attribute vec2 aPos;",
     "void main(){gl_Position=vec4(aPos,0.0,1.0);}"
-  ].join("\\n");
+  ].join("\n");
   const FRAG=[
     "precision highp float;",
     "uniform vec2 resolution;",
@@ -1878,7 +1878,7 @@ function handle(file){
     "  float steps=1.0/(COLOR_NUM-1.0); col=clamp(col+threshold*steps-0.2,0.0,1.0);",
     "  col=floor(col*(COLOR_NUM-1.0)+0.5)/(COLOR_NUM-1.0); gl_FragColor=vec4(toSRGB(col),1.0);",
     "}"
-  ].join("\\n");
+  ].join("\n");
   const BAYER8=[0,48,12,60,3,51,15,63,32,16,44,28,35,19,47,31,8,56,4,52,11,59,7,55,
     40,24,36,20,43,27,39,23,2,50,14,62,1,49,13,61,34,18,46,30,33,17,45,29,
     10,58,6,54,9,57,5,53,42,26,38,22,41,25,37,21];
