@@ -17,7 +17,7 @@
   h1{color:#ffffff;font-weight:700;margin:0 0 6px;text-align:center;
      text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
   .sub{color:var(--muted);margin:0 0 28px;text-align:center;font-size:14px}
-  .card{background:rgba(10,14,18,.94);border:1px solid #242b32;border-radius:14px;padding:26px;width:100%;max-width:620px;
+  .card{background:rgba(0,0,0,.8);border:1px solid #242b32;border-radius:14px;padding:26px;width:100%;max-width:620px;
         box-shadow:0 16px 44px rgba(0,0,0,.58),0 0 0 1px rgba(255,140,26,.025)}
   #drop{display:block;border:2px dashed #a45b18;border-radius:12px;background:rgba(0,0,0,.8);padding:46px 20px;text-align:center;
         cursor:pointer;transition:.15s}
@@ -218,7 +218,11 @@ const VOXELIBRE_TEXTURE_MAPPINGS = {
   "ITEMS/mcl_mangrove/textures/mcl_mangrove_fence.png": "block/mangrove_planks.png",
   "ITEMS/mcl_mangrove/textures/mcl_mangrove_fence_gate.png": "block/mangrove_planks.png",
   "ITEMS/mcl_cherry_blossom/textures/mcl_cherry_blossom_fence.png": "block/cherry_planks.png",
-  "ITEMS/mcl_cherry_blossom/textures/mcl_cherry_blossom_fence_gate.png": "block/cherry_planks.png"
+  "ITEMS/mcl_cherry_blossom/textures/mcl_cherry_blossom_fence_gate.png": "block/cherry_planks.png",
+  // The target's full warped-hyphae cube uses the side grain. Mapping it to
+  // Minecraft's purple-tinted stem-top tile put a purple overlay over the blue
+  // warped wood, unlike the correctly blue fence and door textures.
+  "ITEMS/mcl_crimson/textures/warped_hyphae.png": "block/warped_stem.png"
 };
 
 // Each output keeps VoxeLibre's 42x16 hollow-log UV sheet, but its 16x16
