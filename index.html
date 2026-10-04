@@ -285,9 +285,49 @@ const VOXELIBRE_TEXTURE_MAPPINGS = {
   "vl_tool_diamondspear.png": "item/diamond_spear.png",
   "vl_tool_netheritespear.png": "item/netherite_spear.png",
   "vl_deepslate_tools_deepslatespear.png": "item/stone_spear.png",
+
+  // VoxeLibre's weaponry textures use these root-level target names. The
+  // corresponding Minecraft-style source paths are also accepted when a
+  // user pack contains them; the embedded copies below make these supplied
+  // reference textures available even though vanilla Minecraft has no
+  // hammer/scythe item files.
+  "vl_tool_woodhammer.png": "item/wooden_hammer.png",
+  "vl_tool_stonehammer.png": "item/stone_hammer.png",
+  "vl_tool_steelhammer.png": "item/iron_hammer.png",
+  "vl_tool_goldhammer.png": "item/golden_hammer.png",
+  "vl_tool_diamondhammer.png": "item/diamond_hammer.png",
+  "vl_tool_netheritehammer.png": "item/netherite_hammer.png",
+  "vl_deepslate_tools_deepslatehammer.png": "item/stone_hammer.png",
+  "vl_tool_woodscythe.png": "item/wooden_scythe.png",
+  "vl_tool_stonescythe.png": "item/stone_scythe.png",
+  "vl_tool_steelscythe.png": "item/iron_scythe.png",
+  "vl_tool_goldscythe.png": "item/golden_scythe.png",
+  "vl_tool_diamondscythe.png": "item/diamond_scythe.png",
+  "vl_tool_netheritescythe.png": "item/netherite_scythe.png",
+  "vl_tool_deepslatescythe.png": "item/stone_scythe.png",
   "vl_tridents_inv.png": "item/trident.png",
   "vl_tridents.png": "entity/trident.png"
 };
+
+// These exact supplied 16x16 reference PNGs are embedded so the converter
+// can emit the hammer/scythe assets without requiring a non-vanilla source
+// file in the uploaded Minecraft pack. Alpha, dimensions, and pixel bytes
+// are preserved; no recoloring or geometry operation happens here.
+const EMBEDDED_TOOL_TEXTURES = Object.freeze({
+  "vl_tool_stonehammer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAyUlEQVR4nL2SPQ7CMAyFXxAba2fWcgifgc1nKGPv0Kln6Q06MfgAjNmQIlVZyogYzUJRk/7QIsTbEut7fo4D/ENEpESkY7XtEjjP8+6oImL69c1SuGkaMDPiJJMGMdwpNplNEMMA4L0HEb1NzCjVS8HMAdyXiMwnEBFTVdUo7JyDtfbzIzIziqIYwHVdo21bMzlCmaV69Q+cLzdYdzevvxDAk53LLNXTca+H/S5YGRFpkiTB3cAl7jw3IhCtcS0cGHwDDxKshX+iJ4LhgWyj/OGrAAAAAElFTkSuQmCC",
+  "vl_tool_steelhammer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAz0lEQVR4nL2RIQ6DQBBF/9ZyARQW9J5hdE+xCZVcA49EoTgEoicgCMSgmtQUU9lUThUNy5ZtQPDVZpP3Zn4GOCJEJEQku2FmFmbeLiEimcLMUte1Izn54KIoAADDMKDrOgCAMQZzyapgyhyeorX+StS/CsYY669tW+vt3aBpGlWW5U8YAPq+9wumDbIsc+CqqjCOo1qtkKex3B5vXLsn+P5SRCRaawtenZynsVzOkSRRYJ2MiCQMQ+vPsSwn+yoCizNuhS3BHthKEgVO50PyARLbiSBCknSxAAAAAElFTkSuQmCC",
+  "vl_tool_goldhammer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA00lEQVR4nL2RoQrCYBRGj2KzLlsni+uri77G7yMIjiFi0GIXX8E3MCgYh2K0DTWIonEIIrsGmeiGP2yIH9xy4Xwc7oV/xFeG+MqQwnActSWO2vlLfGVIkm8lJR3cGarM/n4K6PVXdEfnEkA5j9H9FADgtWwSk68GaYsEBjgutwCMpxcquoKn5ki8lp2BAWaLs17ZV4bcQlccC7mFruwn5mscC/1HBsqUZqMm9VpVkrLC8LtRGs4ccaBMCQ9X5usLm12kPTKk3pgX/igoAmcM8sI/yQPf8ZMCQo8gZgAAAABJRU5ErkJggg==",
+  "vl_tool_diamondhammer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA4ElEQVR4nGNgoAeQTU36L5ua9J9szcs/ffi//NMH0g2RTU36////f7gB2Axhwqe5q7ePYcXnjyjidmVFDMiG4DQAG9jy8gmGIYyEvNDV24eimYGBgeHRu/cMDAwMDA/mzGdgwWfA49nzGMsYGP7blRVhaGZgYGD4dPYcfi/Ipib9tysrYtgSHoOh+VJmLsPHcxdw+6AzXf1/hp/cfw057v8ww2xPHv5ve/Lwf34jA/zRia4Z2UXomjGc0Jmu/v/+8+8MBy68Zbjx6CveQGZgQItGUjWjGECOZgwXkKqZKgAACwOJ08TStl8AAAAASUVORK5CYII=",
+  "vl_tool_netheritehammer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAA1ElEQVR4nGNgoAfw0XP876Pn+B+bHAsxmh2CXGDc/1su7WdElmciVvO/HwwMdl4uDOguwWkAumYYMHEzRzEErwvQNX/78xnDEEasupBcYeflgqIZBl7ev8/w+PYr/IEIDbD/Jm7mGJoZGBgYbr+6STgQTdzMGZYvWYShed/Rwww3XzxjxOmFznT1//eff2c4cOEtw41HXxl99Bz/y6qKoWjGaXNnuvr/DD+5/xpy3ChR5qPn+F9dQgpFDMMUdJvxeZGBAS0aSdWMYgA5mjFcQKpmqgAAwm97AED3UA4AAAAASUVORK5CYII=",
+  "vl_deepslate_tools_deepslatehammer.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAyUlEQVR4nL2SPQ7CMAyFXxAba2fWcgifgc1nKGPv0Kln6Q06MfgAjNmQIlVZyogYzUJRk/7QIsTbEut7fo4D/ENEpESkY7XtEjjP8+6oImL69c1SuGkaMDPiJJMGMdwpNplNEMMA4L0HEb1NzCjVS8HMAdyXiMwnEBFTVdUo7JyDtfbzIzIziqIYwHVdo21bMzlCmaV69Q+cLzdYdzevvxDAk53LLNXTca+H/S5YGRFpkiTB3cAl7jw3IhCtcS0cGHwDDxKshX+iJ4LhgWyj/OGrAAAAAElFTkSuQmCC",
+  "vl_tool_woodscythe.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUElEQVR4nGNkwAFirKT+YxNfcuwZIzKfBZfGe6++YWiuS7ZhYGBg+I/NIKJAjJXU/zl5Vv+tVASwuo4oAwZGc2e6+n8NOe5RzaOaaaSZGgAA1i06c6dgw3AAAAAASUVORK5CYII=",
+  "vl_tool_stonescythe.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR4nGNkwAFCQ0P/YxNfvXo1IzKfBZfGc+fOYWjeuXMnAwMDw39sBhEFQkND/+/bt++/srIyVtcRZcDAaO5MV/+vIcc9qnlUM400UwMAAHXQPQFIlW+zAAAAAElFTkSuQmCC",
+  "vl_tool_steelscythe.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAhElEQVR4nO3LsQ1CIRRG4R8KGnaw1Ale6FmBghXcxJpB6JiFgoIhIITkFlxbozHGF+3eqc8n8KbeO7fWMOcEEWGMAe89aq3i8RPPsJTCUko456C1hpQSABBCgFIKRIS1FrZte7EfSylxzpmttfw1BgBjzH4cY9yPb9cLn0/6wAf+E/5Fd4CcUnaA1nb9AAAAAElFTkSuQmCC",
+  "vl_tool_goldscythe.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAVElEQVR4nGNkwAFev4v8j01cVGg5IzKfBZfGs3seY2i28A1heP2O4T+yQRgGoNuAargsTsOJAq/fRf7fscoGq9doq7kzXf2/hhz3qOZRzTTSTA0AANATQe/FB5SRAAAAAElFTkSuQmCC",
+  "vl_tool_diamondscythe.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAY0lEQVR4nGNkwAGMX53+j038rJgpIzKfEV0BTKPo2w8Yml8LC2AYxELIBnTDpX78ZPj99TtcjAmXYlzg99fvDDs0XXFaghMYvzr93+P6bqzhQhB0pqv/15DjHtU8qplGmqkBABBoP8Ve7s9SAAAAAElFTkSuQmCC",
+  "vl_tool_netheritescythe.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAa0lEQVR4nGNkwAF89Bz/YxPfcmk/IzKfBZfG269uYmiOjIljYGBg+I9sECOGKjzAR8/xv6yqGMO+o4cZbr54xsjAwMDARIoBDAwMKJpJAj56jv/VJaSwhgtB4GnK/F9LV2JU86hmGmmmBgAAwz85BYXHQVEAAAAASUVORK5CYII=",
+  "vl_tool_deepslatescythe.png": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAUUlEQVR4nGNkwAFCQ0P/YxNfvXo1IzKfBZfGc+fOYWjeuXMnAwMDw39sBhEFQkND/+/bt++/srIyVtcRZcDAaO5MV/+vIcc9qnlUM400UwMAAHXQPQFIlW+zAAAAAElFTkSuQmCC"
+});
 
 // Each output keeps VoxeLibre's 42x16 hollow-log UV sheet, but its 16x16
 // exterior strip is replaced with the matching Minecraft log side texture.
@@ -414,7 +454,24 @@ const VILLAGER_PROFESSIONS = {
 // DATA.mappings values may be a source-path fallback list. This is used for
 // Minecraft's 1.21.x animal texture split (temperate/cold/warm) and for
 // legacy packs whose paths predate the current asset layout.
-const MAP = {...DATA.mappings, ...VOXELIBRE_MOB_MAPPINGS, ...VOXELIBRE_TEXTURE_MAPPINGS};
+const VOXELIBRE_TOOL_MAPPINGS = Object.freeze({
+  "vl_tool_woodhammer.png": "item/wooden_hammer.png",
+  "vl_tool_stonehammer.png": "item/stone_hammer.png",
+  "vl_tool_steelhammer.png": "item/iron_hammer.png",
+  "vl_tool_goldhammer.png": "item/golden_hammer.png",
+  "vl_tool_diamondhammer.png": "item/diamond_hammer.png",
+  "vl_tool_netheritehammer.png": "item/netherite_hammer.png",
+  "vl_deepslate_tools_deepslatehammer.png": "item/stone_hammer.png",
+  "vl_tool_woodscythe.png": "item/wooden_scythe.png",
+  "vl_tool_stonescythe.png": "item/stone_scythe.png",
+  "vl_tool_steelscythe.png": "item/iron_scythe.png",
+  "vl_tool_goldscythe.png": "item/golden_scythe.png",
+  "vl_tool_diamondscythe.png": "item/diamond_scythe.png",
+  "vl_tool_netheritescythe.png": "item/netherite_scythe.png",
+  "vl_tool_deepslatescythe.png": "item/stone_scythe.png"
+});
+
+const MAP = {...DATA.mappings, ...VOXELIBRE_MOB_MAPPINGS, ...VOXELIBRE_TEXTURE_MAPPINGS, ...VOXELIBRE_TOOL_MAPPINGS};
 // Remove any legacy generated entries for these outputs so a user ZIP can
 // never override the embedded model textures.
 for(const output of Object.keys(EMBEDDED_MOB_TEXTURES)) delete MAP[output];
@@ -1663,6 +1720,12 @@ async function convertTextures(file){
 
   setStatus("Copying block/item/mob textures…");
   for(const o of mapKeys){
+    if(EMBEDDED_TOOL_TEXTURES[o]){
+      out.file(o,embeddedPngToU8(EMBEDDED_TOOL_TEXTURES[o]));
+      copied++;
+      tick();
+      continue;
+    }
     if(EMBEDDED_MOB_TEXTURES[o]){
       out.file(o,embeddedPngToU8(EMBEDDED_MOB_TEXTURES[o]));
       copied++;
