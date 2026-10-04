@@ -14,13 +14,14 @@
   #bgCanvas{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.88}
   body:after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 15%,rgba(255,132,20,.055),transparent 58%),linear-gradient(180deg,rgba(2,4,6,.12),rgba(2,4,6,.48));}
   h1,.sub,.toggle,.card,.patchnote,.foot{position:relative;z-index:1}
-  h1{color:#ffffff;font-weight:700;margin:0 0 6px;text-align:center}
+  h1{color:#ffffff;font-weight:700;margin:0 0 6px;text-align:center;
+     text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000}
   .sub{color:var(--muted);margin:0 0 28px;text-align:center;font-size:14px}
   .card{background:rgba(10,14,18,.94);border:1px solid #242b32;border-radius:14px;padding:26px;width:100%;max-width:620px;
         box-shadow:0 16px 44px rgba(0,0,0,.58),0 0 0 1px rgba(255,140,26,.025)}
-  #drop{display:block;border:2px dashed #a45b18;border-radius:12px;background:rgba(5,8,11,.94);padding:46px 20px;text-align:center;
+  #drop{display:block;border:2px dashed #a45b18;border-radius:12px;background:rgba(0,0,0,.8);padding:46px 20px;text-align:center;
         cursor:pointer;transition:.15s}
-  #drop.drag{background:#1d140b;border-color:var(--orange2);box-shadow:0 0 24px rgba(255,140,26,.14)}
+  #drop.drag{background:rgba(0,0,0,.8);border-color:var(--orange2);box-shadow:0 0 24px rgba(255,140,26,.14)}
   #drop .ico{color:var(--orange);margin-bottom:8px;display:block;margin-inline:auto}
   #drop p{margin:10px 0 2px;font-weight:600}
   #drop .hint{color:var(--muted);font-size:13px}
