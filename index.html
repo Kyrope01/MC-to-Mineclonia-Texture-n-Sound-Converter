@@ -295,16 +295,39 @@ function embeddedPngToU8(dataUrl){
   return out;
 }
 
-// VoxeLibre's horse B3D textures are 128x128. Modern Minecraft horse and
-// horse-armour assets are 64x64, so enlarge them with nearest-neighbour pixels
-// instead of letting the model sample a half-sized atlas.
-async function pNearestScale(u8,factor=2){
+// VoxeLibre's horse B3D uses Minecraft's pre-1.13 128x128 horse UV atlas.
+// Minecraft changed the horse model and packed the equivalent texture into a
+// different 64x64 atlas in 1.13. A plain resize keeps the wrong UV positions
+// and produces fragmented horses, so these are the exact old-atlas regions
+// used by the official 1.12 -> 1.13 texture conversion, inverted here.
+const HORSE_LEGACY_PARTS = [
+  // old y1,y2,x1,x2, modern x,y
+  [0,12,0,24,0,13], [0,12,9,24,10,13], [0,7,14,17,16,13], [7,12,21,24,23,20],
+  [12,20,0,6,0,12], [0,4,0,6,19,16],
+  [19,27,25,43,0,25], [32,34,24,42,0,33], [27,32,33,37,9,25],
+  [21,33,0,7,0,42], [21,33,8,12,7,42], [21,33,13,20,11,42], [21,33,20,24,18,42],
+  [12,19,8,16,7,35],
+  [4,20,58,60,56,38], [4,20,62,64,58,38], [4,20,65,67,60,38], [4,20,67,69,62,38],
+  [2,4,62,66,58,36],
+  [58,68,0,22,0,54], [58,68,13,24,11,54], [58,68,24,34,22,54],
+  [58,68,34,56,32,54], [58,68,47,57,43,54], [58,68,58,68,54,54],
+  [34,56,24,44,22,32], [49,58,24,44,22,45],
+  [34,45,0,11,26,21], [47,58,11,22,37,21],
+  [35,41,97,113,48,25], [49,51,96,104,48,31], [49,51,96,104,56,31],
+  [55,58,96,112,48,33], [29,33,101,105,52,21], [51,55,104,108,56,21],
+  [9,11,89,98,26,9], [9,11,89,98,45,9]
+];
+async function pHorseLegacyTexture(u8){
   const img=await u8ToImage(u8); if(!img)return null;
   const w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+  // A 128x128 input is already the legacy layout used by VoxeLibre.
   if(w!==64 || h!==64)return u8;
-  const c=document.createElement("canvas"); c.width=w*factor; c.height=h*factor;
-  const ctx=c.getContext("2d"); ctx.imageSmoothingEnabled=false;
-  ctx.drawImage(img,0,0,w,h,0,0,c.width,c.height);
+  const c=document.createElement("canvas"); c.width=128; c.height=128;
+  const ctx=c.getContext("2d"); ctx.imageSmoothingEnabled=false; ctx.clearRect(0,0,128,128);
+  for(const [y1,y2,x1,x2,modernX,modernY] of HORSE_LEGACY_PARTS){
+    const sw=x2-x1, sh=y2-y1;
+    ctx.drawImage(img,modernX,modernY,sw,sh,x1,y1,sw,sh);
+  }
   return canvasToU8(c);
 }
 
@@ -1367,7 +1390,7 @@ async function convertTextures(file){
     if(src){
       let bytes=merged[src];
       if(/^mobs_mc_horse_/.test(o) || /^mcl_mobitems_horse_armor_/.test(o))
-        bytes=await pNearestScale(bytes,2);
+        bytes=await pHorseLegacyTexture(bytes);
       if(/^mobs_mc_(cow|pig|mooshroom)(?:_brown)?\.png$/.test(o) || o==="mobs_mc_pig_saddle.png")
         bytes=await pClassicQuadrupedTexture(bytes);
       if(o==="mobs_mc_llama_spit.png") bytes=await pLlamaSpitTexture(bytes);
