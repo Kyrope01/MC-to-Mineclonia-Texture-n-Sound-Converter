@@ -71,6 +71,16 @@
   .default-source .source-btn{padding:7px 10px;border:1px solid #5a5a64;border-radius:8px;background:var(--panel2);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
   .default-source .source-btn:hover{border-color:var(--orange);color:var(--orange2)}
   .default-source .source-file-name{font-size:11px;color:var(--muted);word-break:break-all}
+  .site-picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 14px;padding:10px 12px;border:1px solid #4a4a54;border-radius:10px;background:#25252b;color:var(--muted);font-size:12.5px}
+  .site-picker b{color:var(--text);margin-right:2px}
+  .site-picker button,.site-browser .browser-open{padding:7px 11px;border:1px solid #5a5a64;border-radius:8px;background:var(--panel2);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+  .site-picker button:hover,.site-browser .browser-open:hover{border-color:var(--orange);color:var(--orange2)}
+  .site-browser{margin:0 0 18px;border:1px solid #4a4a54;border-radius:10px;overflow:hidden;background:#17171a}
+  .site-browser-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:9px 11px;color:var(--muted);font-size:12px}
+  .site-browser-head b{color:var(--text);margin-right:auto}
+  .site-browser iframe{display:block;width:100%;height:520px;border:0;background:#fff}
+  .site-browser .browser-note{margin:0;padding:8px 11px;color:var(--muted);font-size:11.5px;line-height:1.45}
+  .site-browser .browser-note a{color:var(--orange2)}
 </style>
 </head>
 <body>
@@ -109,6 +119,15 @@
       <p id="dropTitle">Drop or upload Minecraft texture pack zip</p>
       <span class="hint" id="dropHint">Supports base packs and 1.21.x version overlays &middot; runs fully in your browser</span>
     </label>
+    <div class="site-picker" id="sitePicker">
+      <b>Browse/download a pack:</b>
+      <span id="siteButtons"></span>
+    </div>
+    <div class="site-browser" id="siteBrowser" style="display:none">
+      <div class="site-browser-head"><b id="siteBrowserTitle">Resource-pack website</b><button class="browser-open" id="siteOpen" type="button">Open in new tab</button></div>
+      <iframe id="siteFrame" title="Resource-pack website browser" sandbox="allow-forms allow-downloads allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      <p class="browser-note">Download the ZIP in this browser panel, then use <b>Use downloaded ZIP</b> above or drop the ZIP here. Some websites block embedding; use <a id="siteFallback" target="_blank" rel="noopener" href="#">Open this site in a new tab</a> if the panel stays blank. The converter cannot read downloads from another website automatically because of browser security.</p>
+    </div>
     <input type="file" id="file" accept=".zip">
     <div class="row">
       <div class="progress" id="prog"><div class="bar" id="bar"></div></div>
@@ -209,6 +228,13 @@ const CURSEFORGE_DEFAULT_PACK = Object.freeze({
   ]
 });
 
+// The small embedded browser only needs these starting pages. Add or change a
+// site here later; it is intentionally separate from the download/fetch logic.
+const RESOURCE_PACK_SITES = [
+  {name:"CurseForge", url:CURSEFORGE_DEFAULT_PACK.projectUrl},
+  {name:"Modrinth", url:"https://modrinth.com/resourcepacks"}
+];
+
 let builtZip=null, outBlob=null, outName="texture_pack.zip";
 let mode="textures"; // "textures" | "sounds"
 let sndOut="mod";    // sound output: "mod" | "patch"
@@ -245,6 +271,8 @@ function applyTexts(){
   $("defaultSource").style.display = snd ? "none" : "block";
   $("defaultVersion").textContent = CURSEFORGE_DEFAULT_PACK.version+" · file "+CURSEFORGE_DEFAULT_PACK.fileId+" · updated "+CURSEFORGE_DEFAULT_PACK.updated;
   $("defaultLink").href = CURSEFORGE_DEFAULT_PACK.downloadUrls[0];
+  $("sitePicker").style.display = snd ? "none" : "flex";
+  $("siteBrowser").style.display = snd || $("siteBrowser").dataset.open!=="1" ? "none" : "block";
 }
 function setMode(m){ mode=m; applyTexts(); resetUI(); }
 function setFmt(f){ sndOut=f; applyTexts(); resetUI(); }
@@ -1451,7 +1479,27 @@ async function finalize(){
   setStatus("Ready! Click download to save <b>"+outName+"</b>.");
 }
 
+let currentResourceSite=null;
+function openResourceSite(site){
+  currentResourceSite=site;
+  $("siteBrowserTitle").textContent=site.name;
+  $("siteFrame").src=site.url;
+  $("siteFallback").href=site.url;
+  $("siteBrowser").dataset.open="1";
+  $("siteBrowser").style.display=mode==="textures" ? "block" : "none";
+}
+function buildResourceSiteButtons(){
+  const wrap=$("siteButtons");
+  for(const site of RESOURCE_PACK_SITES){
+    const button=document.createElement("button");
+    button.type="button"; button.textContent=site.name;
+    button.addEventListener("click",()=>openResourceSite(site));
+    wrap.appendChild(button);
+  }
+}
+
 // UI wiring
+buildResourceSiteButtons();
 applyTexts();
 const drop=$("drop"), fileInput=$("file"), defaultFileInput=$("defaultFile");
 // block the browser from navigating away when a file is dropped outside the box
@@ -1473,6 +1521,10 @@ $("mTex").addEventListener("click",()=>setMode("textures"));
 $("mSnd").addEventListener("click",()=>setMode("sounds"));
 $("fmtMod").addEventListener("click",()=>setFmt("mod"));
 $("fmtPatch").addEventListener("click",()=>setFmt("patch"));
+$("siteOpen").addEventListener("click",()=>{
+  const site=currentResourceSite||RESOURCE_PACK_SITES[0];
+  window.open(site.url,"_blank","noopener");
+});
 $("defaultBtn").addEventListener("click",()=>{
   $("useDefault").checked=true; resetUI();
   convertTextures(null).catch(err=>{ console.error(err); setStatus("<b style='color:#ff5a5a'>Error:</b> "+(err.message||err)); });
