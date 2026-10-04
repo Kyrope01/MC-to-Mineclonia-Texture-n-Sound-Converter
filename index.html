@@ -59,6 +59,15 @@
   .toggle.fmt{margin:-14px 0 16px;align-items:center}
   .fmt .fmtlbl{color:var(--muted);font-size:13px;font-weight:600}
   .fmt button{padding:6px 14px;font-size:12.5px}
+  .default-source{margin:0 0 18px;padding:13px 14px;background:#25252b;border:1px solid #4a4a54;border-radius:10px;color:var(--muted);font-size:12.5px;line-height:1.5}
+  .default-source label{display:flex;gap:9px;align-items:flex-start;color:var(--text);font-weight:700;cursor:pointer}
+  .default-source input{accent-color:var(--orange);margin-top:3px}
+  .default-source .source-detail{display:block;margin:6px 0 10px 25px}
+  .default-source code{color:var(--orange2);background:#00000033;padding:1px 4px;border-radius:4px}
+  .default-source a{color:var(--orange2)}
+  .default-source .source-actions{display:flex;gap:8px;align-items:center;margin-left:25px;flex-wrap:wrap}
+  .default-source .source-btn{padding:7px 10px;border:1px solid #5a5a64;border-radius:8px;background:var(--panel2);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
+  .default-source .source-btn:hover{border-color:var(--orange);color:var(--orange2)}
 </style>
 </head>
 <body>
@@ -74,6 +83,15 @@
     <button id="fmtPatch" type="button">Game-files patch</button>
   </div>
   <div class="card">
+    <div class="default-source" id="defaultSource">
+      <label><input type="checkbox" id="useDefault" checked>
+        <span>Auto-download Minecraft default textures as a fallback</span></label>
+      <span class="source-detail">Configured CurseForge source: <code id="defaultVersion">loading…</code> · your uploaded pack is applied on top.</span>
+      <div class="source-actions">
+        <button class="source-btn" id="defaultBtn" type="button">Convert default pack only</button>
+        <a id="defaultLink" target="_blank" rel="noopener" href="#">Open source page</a>
+      </div>
+    </div>
     <label id="drop" for="file">
       <svg class="ico" viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -165,6 +183,24 @@ const EXTRAS = {
 
 const $ = id => document.getElementById(id);
 const BASE = "assets/minecraft/textures/";
+
+// Update this single object when the CurseForge project publishes a newer
+// combined default pack. The converter deliberately keeps the file ID and
+// filename explicit: it avoids silently downloading an unexpected Minecraft
+// version, and makes future updates a one-place maintenance change.
+const CURSEFORGE_DEFAULT_PACK = Object.freeze({
+  projectUrl: "https://www.curseforge.com/minecraft/texture-packs/default-template-resource-pack-vanilla-minecraft",
+  version: "1.20.5–26.2",
+  fileId: "8540189",
+  fileName: "texture-pack-default1.20.5-26.2.zip",
+  updated: "2026-07-30",
+  downloadUrls: [
+    "https://www.curseforge.com/minecraft/texture-packs/default-template-resource-pack-vanilla-minecraft/download/8540189",
+    "https://mediafilez.forgecdn.net/files/8540/189/texture-pack-default1.20.5-26.2.zip",
+    "https://edge.forgecdn.net/files/8540/189/texture-pack-default1.20.5-26.2.zip"
+  ]
+});
+
 let builtZip=null, outBlob=null, outName="texture_pack.zip";
 let mode="textures"; // "textures" | "sounds"
 let sndOut="mod";    // sound output: "mod" | "patch"
@@ -185,7 +221,7 @@ function applyTexts(){
     ? "Drop or upload Minecraft resource pack zip (sounds)"
     : "Drop or upload Minecraft texture pack zip";
   $("dropHint").innerHTML = !snd
-    ? "Supports base packs and 1.21.x version overlays &middot; runs fully in your browser"
+    ? "Default pack fallback is enabled above; your zip is applied on top &middot; runs fully in your browser"
     : patch
       ? "Overwrites stock sound files and wires per-block sounds into the game itself &middot; no mod to enable &middot; works in every world you open or host"
       : "Outputs a mod with unique per-block place/break/mine/footstep sounds &middot; enable per world";
@@ -197,6 +233,9 @@ function applyTexts(){
   const litId = !snd ? "ftTex" : patch ? "ftPatch" : "ftMod";
   for(const id of ["ftTex","ftMod","ftPatch"]) $(id).style.display = id===litId ? "" : "none";
   $("patchNote").style.display = patch ? "block" : "none";
+  $("defaultSource").style.display = snd ? "none" : "block";
+  $("defaultVersion").textContent = CURSEFORGE_DEFAULT_PACK.version+" · file "+CURSEFORGE_DEFAULT_PACK.fileId+" · updated "+CURSEFORGE_DEFAULT_PACK.updated;
+  $("defaultLink").href = CURSEFORGE_DEFAULT_PACK.projectUrl;
 }
 function setMode(m){ mode=m; applyTexts(); resetUI(); }
 function setFmt(f){ sndOut=f; applyTexts(); resetUI(); }
@@ -1212,17 +1251,57 @@ end)
 }
 
 let sndMeta = null;
-async function convertTextures(file){
-  setStatus("Reading zip…");
-  const buf = await file.arrayBuffer();
-  const zip = await JSZip.loadAsync(buf);
-  const names = Object.keys(zip.files);
+
+async function addTextureZipToMerged(zip, merged){
+  const names=Object.keys(zip.files);
+  // CurseForge's template is clean, but accepting one containing a single
+  // enclosing folder makes this robust to future repackaging.
+  const marker="assets/minecraft/textures/";
+  const markerFile=names.find(n=>n.indexOf(marker)>=0);
+  const root=markerFile ? markerFile.slice(0,markerFile.indexOf(marker)) : "";
   let overlays=[];
-  const pmc = zip.file("pack.mcmeta");
+  const pmc=zip.file(root+"pack.mcmeta");
   if(pmc){ try{ const m=JSON.parse(await pmc.async("string")); if(m.overlays&&m.overlays.entries) overlays=m.overlays.entries.map(e=>e.directory); }catch(e){} }
+  const copyBase=prefix=>{
+    const base=root+prefix+BASE;
+    return Promise.all(names.map(async n=>{
+      if(n.indexOf(base)!==0) return;
+      const z=zip.files[n]; if(!z.dir) merged[n.slice(base.length)]=await z.async("uint8array");
+    }));
+  };
+  await copyBase("");
+  for(const ov of overlays) await copyBase(ov+"/");
+}
+
+async function downloadCurseForgeDefaultPack(){
+  let last=null;
+  for(const url of CURSEFORGE_DEFAULT_PACK.downloadUrls){
+    try{
+      setStatus("Downloading Minecraft default textures from CurseForge…");
+      const res=await fetch(url,{mode:"cors",redirect:"follow"});
+      if(!res.ok) throw new Error("HTTP "+res.status);
+      const buf=await res.arrayBuffer();
+      const zip=await JSZip.loadAsync(buf);
+      if(!Object.keys(zip.files).some(n=>n.indexOf("assets/minecraft/textures/")>=0)) throw new Error("download was not a Minecraft resource-pack zip");
+      return zip;
+    }catch(e){ last=e; }
+  }
+  throw new Error("CurseForge default pack could not be downloaded in this browser. Open the source page and download file "+CURSEFORGE_DEFAULT_PACK.fileId+" manually, then upload that zip together with your pack. "+(last&&last.message?last.message:""));
+}
+
+async function convertTextures(file){
+  showProgress(0);
   const merged={};
-  for(const n of names){ if(n.indexOf(BASE)===0 && n.indexOf("/overlay_")<0){ const z=zip.files[n]; if(!z.dir) merged[n.slice(BASE.length)]=await z.async("uint8array"); } }
-  for(const ov of overlays){ const ob=ov+"/assets/minecraft/textures/"; for(const n of names){ if(n.indexOf(ob)===0){ const z=zip.files[n]; if(!z.dir) merged[n.slice(ob.length)]=await z.async("uint8array"); } } }
+  if($("useDefault").checked){
+    const defaultZip=await downloadCurseForgeDefaultPack();
+    await addTextureZipToMerged(defaultZip,merged);
+  }
+  if(file){
+    setStatus($("useDefault").checked ? "Reading your texture pack and applying it over the default…" : "Reading zip…");
+    const zip=await JSZip.loadAsync(await file.arrayBuffer());
+    await addTextureZipToMerged(zip,merged);
+  }
+  if(!Object.keys(merged).length) throw new Error("Choose a Minecraft texture-pack zip, or enable the default-pack option.");
   // canonical fallbacks for textures that only exist in some MC versions: pre-1.21.2 the moss
   // carpet model samples block/moss_block.png, so packs without the newer dedicated files still
   // give the carpet a matching green texture instead of falling back to VoxeLibre's stock
@@ -1290,7 +1369,7 @@ async function convertTextures(file){
   builtZip = out;
   showProgress(1);
   // ask for the pack name before offering the download
-  $("nameIn").value = file.name.replace(/\.zip$/i,"");
+  $("nameIn").value = file ? file.name.replace(/\.zip$/i,"") : "Minecraft Default Textures";
   $("nameStep").style.display = "block";
   $("dl").style.display = "none";
   setStatus("Converted <b>"+copied+"</b> textures. Choose a name for your pack, then save.");
@@ -1345,6 +1424,7 @@ async function finalize(){
 }
 
 // UI wiring
+applyTexts();
 const drop=$("drop"), fileInput=$("file");
 // block the browser from navigating away when a file is dropped outside the box
 ["dragenter","dragover","drop","dragleave"].forEach(e=>window.addEventListener(e,ev=>ev.preventDefault()));
@@ -1356,6 +1436,10 @@ $("mTex").addEventListener("click",()=>setMode("textures"));
 $("mSnd").addEventListener("click",()=>setMode("sounds"));
 $("fmtMod").addEventListener("click",()=>setFmt("mod"));
 $("fmtPatch").addEventListener("click",()=>setFmt("patch"));
+$("defaultBtn").addEventListener("click",()=>{
+  $("useDefault").checked=true; resetUI();
+  convertTextures(null).catch(err=>{ console.error(err); setStatus("<b style='color:#ff5a5a'>Error:</b> "+(err.message||err)); });
+});
 $("nameBtn").addEventListener("click",()=>{ finalize().catch(err=>{console.error(err);setStatus("<b style='color:#ff5a5a'>Error:</b> "+(err.message||err));}); });
 $("nameIn").addEventListener("keydown",ev=>{ if(ev.key==="Enter") $("nameBtn").click(); });
 $("dl").addEventListener("click",()=>{ if(!outBlob)return; const a=document.createElement("a"); a.href=URL.createObjectURL(outBlob); a.download=outName; a.click(); });
