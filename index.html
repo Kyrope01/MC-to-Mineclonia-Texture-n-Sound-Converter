@@ -95,8 +95,8 @@
         <label class="source-btn" for="defaultFile">Use downloaded ZIP</label>
         <input id="defaultFile" type="file" accept=".zip">
         <span class="source-file-name" id="defaultFileName">no local ZIP selected</span>
-        <button class="source-btn" id="defaultBtn" type="button">Convert default pack only</button>
-        <a id="defaultLink" target="_blank" rel="noopener" href="#">Open download link</a>
+        <button class="source-btn" id="defaultBtn" type="button">Auto-download &amp; convert default pack</button>
+        <a id="defaultLink" target="_blank" rel="noopener" href="#">Download ZIP in browser</a>
       </div>
       <span class="source-detail">If you press CurseForge&rsquo;s download button in another tab, paste its <code>/download/FILE_ID</code> link above. The converter will try that link first.</span>
     </div>
@@ -1474,6 +1474,11 @@ $("mSnd").addEventListener("click",()=>setMode("sounds"));
 $("fmtMod").addEventListener("click",()=>setFmt("mod"));
 $("fmtPatch").addEventListener("click",()=>setFmt("patch"));
 $("defaultBtn").addEventListener("click",()=>{
+  // This button deliberately uses the configured CurseForge download URL,
+  // rather than a manually selected local ZIP or a remembered custom URL.
+  localDefaultPackFile=null;
+  $("defaultFileName").textContent="no local ZIP selected";
+  $("defaultUrl").value=CURSEFORGE_DEFAULT_PACK.downloadUrls[0];
   $("useDefault").checked=true; resetUI();
   convertTextures(null).catch(err=>{ console.error(err); setStatus("<b style='color:#ff5a5a'>Error:</b> "+(err.message||err)); });
 });
