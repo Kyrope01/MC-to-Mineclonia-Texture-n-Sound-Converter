@@ -539,40 +539,13 @@ async function pCompositeTexture(baseU8,overlayU8,fallbackDataUrl){
   return canvasToU8(c);
 }
 
-async function pLecternTexture(merged){
-  // The target model is a hand-packed 32x32 atlas, not Minecraft's 16x16
-  // block tile. Start from the complete VoxeLibre atlas so the book and all
-  // UV islands remain valid, then remap Minecraft's separate lectern parts
-  // into the target wood islands. This also gives a safe fallback for packs
-  // that omit one of the modern component textures.
-  const fallback=await dataURLToImage(EMBEDDED_LECTERN_FALLBACK);
-  if(!fallback)return embeddedPngToU8(EMBEDDED_LECTERN_FALLBACK);
-  const parts={
-    planks:await u8ToImage(merged["block/oak_planks.png"]),
-    base:await u8ToImage(merged["block/lectern_base.png"]),
-    front:await u8ToImage(merged["block/lectern_front.png"]),
-    sides:await u8ToImage(merged["block/lectern_sides.png"]),
-    top:await u8ToImage(merged["block/lectern_top.png"])
-  };
-  if(!Object.values(parts).some(Boolean))return embeddedPngToU8(EMBEDDED_LECTERN_FALLBACK);
-  const c=document.createElement("canvas"); c.width=32; c.height=32;
-  const ctx=c.getContext("2d"); ctx.imageSmoothingEnabled=false; ctx.drawImage(fallback,0,0);
-  const tile=(img,sx,sy,sw,sh,dx,dy,dw,dh)=>{
-    if(!img)return;
-    const scale=Math.max(1,(img.naturalWidth||img.width)/16);
-    ctx.drawImage(img,sx*scale,sy*scale,sw*scale,sh*scale,dx,dy,dw,dh);
-  };
-  // These rectangles are the wood regions used by
-  // mcl_lectern_lectern.obj. The 22..32 by 18..32 island is intentionally
-  // untouched: it is the purple book and its paper, not lectern wood.
-  tile(parts.base||parts.planks,0,0,16,16,14,0,18,18);
-  tile(parts.base||parts.planks,0,6,16,2,0,0,14,3);
-  tile(parts.front||parts.sides||parts.base,0,0,8,13,0,12,10,20);
-  tile(parts.sides||parts.front||parts.base,2,8,13,8,10,20,12,12);
-  tile(parts.sides||parts.front||parts.base,0,0,16,8,0,20,10,12);
-  tile(parts.top||parts.sides||parts.base,0,1,16,13,0,12,22,8);
-  tile(parts.planks||parts.base,0,0,16,16,10,20,12,12);
-  return canvasToU8(c);
+async function pLecternTexture(){
+  // Minecraft's lectern has a different mesh and UV atlas from VoxeLibre's
+  // mcl_lectern model. Do not copy or composite Minecraft's split lectern
+  // textures: that would paint the right pixels into the wrong 3D surfaces.
+  // Always emit the complete target atlas, including its book and target UV
+  // islands, just as we do for the other model-specific fallbacks.
+  return embeddedPngToU8(EMBEDDED_LECTERN_FALLBACK);
 }
 
 async function pColor(u8,color){ const img=await u8ToImage(u8); if(!img)return null; const c=imgToCanvas(img),ctx=c.getContext('2d');
@@ -1681,7 +1654,7 @@ async function convertTextures(file){
     tick();
   }
   setStatus("Building lectern atlas…");
-  { const b=await pLecternTexture(merged); if(b){out.file("ITEMS/mcl_lectern/textures/mcl_lectern_lectern.png",b);copied++;} tick(); }
+  { const b=await pLecternTexture(); if(b){out.file("ITEMS/mcl_lectern/textures/mcl_lectern_lectern.png",b);copied++;} tick(); }
   setStatus("Tinting water, vines, plant icons…");
   for(const o in COLOR){ const s=merged[COLOR[o].src]; if(s){ const b=await pColor(s,COLOR[o].color); if(b){out.file(o,b);copied++;} } tick(); }
   { setStatus("Grass shadow…"); const s=merged[GRASS.src]; if(s){ const b=await pGrass(s,GRASS.opacity); if(b){out.file(GRASS.out,b);copied++;} } tick(); }
