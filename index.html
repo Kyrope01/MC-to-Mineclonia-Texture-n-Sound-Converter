@@ -219,10 +219,55 @@ const VOXELIBRE_TEXTURE_MAPPINGS = {
   "ITEMS/mcl_mangrove/textures/mcl_mangrove_fence_gate.png": "block/mangrove_planks.png",
   "ITEMS/mcl_cherry_blossom/textures/mcl_cherry_blossom_fence.png": "block/cherry_planks.png",
   "ITEMS/mcl_cherry_blossom/textures/mcl_cherry_blossom_fence_gate.png": "block/cherry_planks.png",
-  // The target's full warped-hyphae cube uses the side grain. Mapping it to
-  // Minecraft's purple-tinted stem-top tile put a purple overlay over the blue
-  // warped wood, unlike the correctly blue fence and door textures.
-  "ITEMS/mcl_crimson/textures/warped_hyphae.png": "block/warped_stem.png"
+  // VoxeLibre's current mcl_crimson nodes use the prefixed filenames below.
+  // The older generated table also contains unprefixed aliases (for example
+  // `warped_hyphae.png`), but those aliases do not replace the files sampled by
+  // the current nodes. Keep the legacy entries above/below for older target
+  // releases, and explicitly cover the current names as well.
+  //
+  // Keep the Minecraft UV roles intact: stem_top is the top/bottom tile,
+  // stem is the animated side tile, and planks is the wood/fence tile. A
+  // purple-looking top must not be used as the side tile, and the animated
+  // side strip must not be used for the 16x16 top/bottom UV.
+  "ITEMS/mcl_crimson/textures/warped_hyphae.png": "block/warped_stem_top.png",
+  "ITEMS/mcl_crimson/textures/warped_hyphae_side.png": "block/warped_stem.png",
+  "ITEMS/mcl_crimson/textures/warped_hyphae_wood.png": "block/warped_planks.png",
+  "ITEMS/mcl_crimson/textures/warped_nylium.png": "block/warped_nylium.png",
+  "ITEMS/mcl_crimson/textures/warped_nylium_side.png": "block/warped_nylium_side.png",
+  "ITEMS/mcl_crimson/textures/warped_wart_block.png": "block/warped_wart_block.png",
+  "ITEMS/mcl_crimson/textures/warped_roots.png": "block/warped_roots.png",
+  "ITEMS/mcl_crimson/textures/farming_warped_fungus.png": "block/warped_fungus.png",
+  "ITEMS/mcl_crimson/textures/shroomlight.png": "block/shroomlight.png",
+  "ITEMS/mcl_crimson/textures/nether_sprouts.png": "block/nether_sprouts.png",
+  "ITEMS/mcl_crimson/textures/stripped_warped_stem.png": "block/stripped_warped_stem.png",
+  "ITEMS/mcl_crimson/textures/stripped_warped_stem_side.png": "block/stripped_warped_stem.png",
+  "ITEMS/mcl_crimson/textures/stripped_warped_stem_top.png": "block/stripped_warped_stem_top.png",
+  "ITEMS/mcl_crimson/textures/warped_stem_stripped_side.png": "block/stripped_warped_stem.png",
+  "ITEMS/mcl_crimson/textures/warped_stem_stripped_top.png": "block/stripped_warped_stem_top.png",
+
+  // Current VoxeLibre texture filenames. These are deliberately explicit
+  // rather than relying on a basename transform: the mcl_crimson mod has a
+  // mix of old unprefixed and current prefixed names.
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_door_bottom_bottompart.png": "block/warped_door_bottom.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_door_bottom_side.png": "block/warped_door_bottom.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_door_top_side.png": "block/warped_door_top.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_door_top_toppart.png": "block/warped_door_top.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_hyphae.png": "block/warped_stem_top.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_hyphae_side.png": "block/warped_stem.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_hyphae_wood.png": "block/warped_planks.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_hyphae_wood_2nd.png": "block/warped_planks.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_nylium.png": "block/warped_nylium.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_nylium_side.png": "block/warped_nylium_side.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_wart_block.png": "block/warped_wart_block.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_roots.png": "block/warped_roots.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_fungus.png": "block/warped_fungus.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_shroomlight.png": "block/shroomlight.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_nether_sprouts.png": "block/nether_sprouts.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_stripped_warped_stem.png": "block/stripped_warped_stem.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_stripped_warped_stem_side.png": "block/stripped_warped_stem.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_stripped_warped_stem_top.png": "block/stripped_warped_stem_top.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_stem_stripped_side.png": "block/stripped_warped_stem.png",
+  "ITEMS/mcl_crimson/textures/mcl_crimson_warped_stem_stripped_top.png": "block/stripped_warped_stem_top.png"
 };
 
 // Each output keeps VoxeLibre's 42x16 hollow-log UV sheet, but its 16x16
