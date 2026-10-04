@@ -189,6 +189,15 @@ const DOUBLE_CHESTS = {
   "ITEMS/mcl_chests/textures/mcl_chests_normal_double_present.png":["entity/chest/christmas_left.png","entity/chest/christmas_right.png"],
   "ITEMS/mcl_chests/textures/mcl_chests_trapped_double_present.png":["entity/chest/christmas_left.png","entity/chest/christmas_right.png"],
 };
+// The latch is a complete 6x5 patch in the single-chest atlas. It must not be
+// copied from the top-left of the right-half atlas: that half intentionally
+// contains a transparent seam, which becomes a visible hole in a double chest.
+const DOUBLE_CHEST_LATCH = {
+  "ITEMS/mcl_chests/textures/mcl_chests_normal_double.png":"entity/chest/normal.png",
+  "ITEMS/mcl_chests/textures/mcl_chests_trapped_double.png":"entity/chest/trapped.png",
+  "ITEMS/mcl_chests/textures/mcl_chests_normal_double_present.png":"entity/chest/christmas.png",
+  "ITEMS/mcl_chests/textures/mcl_chests_trapped_double_present.png":"entity/chest/christmas.png",
+};
 const CHEST_LEFT = {left_lid_d:[14,0,15,14,44,0],left_lid_u:[29,0,15,14,14,0],left_lid_side_b:[14,14,15,5,58,14],
   left_lid_side_r:[29,14,14,5,44,14],left_lid_side_f:[43,14,15,5,29,14],left_body_d:[14,19,15,14,44,19],
   left_body_u:[29,19,15,14,14,19],left_body_side_b:[14,33,15,10,58,33],left_body_side_r:[29,33,14,10,44,33],
@@ -530,14 +539,20 @@ async function pSingleChest(u8){ const img=await u8ToImage(u8); if(!img)return n
     const part=ctx.getImageData(sx,sy,sw,sh); const rot=new ImageData(rotate180(part.data,sw,sh),sw,sh); ctx.putImageData(rot,sx,sy); }
   return canvasToU8(c); }
 
-async function pDoubleChest(lu,ru){ const li=await u8ToImage(lu),ri=await u8ToImage(ru); if(!li||!ri)return null;
+async function pDoubleChest(lu,ru,latchU8){ const li=await u8ToImage(lu),ri=await u8ToImage(ru); if(!li||!ri)return null;
   const pd=li.naturalWidth/64, o=document.createElement('canvas'); o.width=li.naturalWidth*2; o.height=li.naturalHeight;
   const ctx=o.getContext('2d'); ctx.imageSmoothingEnabled=false;
   async function paste(img,defs){ const sc=imgToCanvas(img),sx=sc.getContext('2d');
     for(const k in defs){ const [cx,cy,cw,ch,px,py]=defs[k],W=cw*pd,H=ch*pd;
       const part=sx.getImageData(cx*pd,cy*pd,W,H); const rot=new ImageData(rotate180(part.data,W,H),W,H); ctx.putImageData(rot,px*pd,py*pd); } }
   await paste(li,CHEST_LEFT); await paste(ri,CHEST_RIGHT);
-  const rc=imgToCanvas(ri).getContext('2d'); ctx.putImageData(rc.getImageData(0,0,6*pd,5*pd),0,0);
+  // Use the complete single-chest latch. The right-half texture's top-left
+  // pixels are a seam mask, not a complete latch, and copying them verbatim
+  // leaves a transparent vertical stripe through the rendered handle.
+  if(latchU8){
+    const latch=await u8ToImage(latchU8);
+    if(latch){ const lc=imgToCanvas(latch).getContext('2d'); ctx.putImageData(lc.getImageData(0,0,6*pd,5*pd),0,0); }
+  }
   return canvasToU8(o); }
 
 async function makeScreenshot(merged){ const keys=[]; for(const o in MAP){
@@ -1409,7 +1424,7 @@ async function convertTextures(file){
   for(const o in ARMOR){ const s=merged[ARMOR[o]]; if(s){ const b=await pArmor(s,o); if(b){out.file(o,b);copied++;} } tick(); }
   setStatus("Processing chests…");
   for(const o in CHESTS){ if(o.indexOf("_double")>=0) continue; const s=merged[CHESTS[o]]; if(s){ const b=await pSingleChest(s); if(b){out.file(o,b);copied++;} } tick(); }
-  for(const o in DOUBLE_CHESTS){ const [l,r]=DOUBLE_CHESTS[o]; if(merged[l]&&merged[r]){ const b=await pDoubleChest(merged[l],merged[r]); if(b){out.file(o,b);copied++;} } }
+  for(const o in DOUBLE_CHESTS){ const [l,r]=DOUBLE_CHESTS[o], latch=merged[DOUBLE_CHEST_LATCH[o]]; if(merged[l]&&merged[r]){ const b=await pDoubleChest(merged[l],merged[r],latch); if(b){out.file(o,b);copied++;} } }
   // campfire fire + lit logs: rebuild strips at double width into the half the mesh samples
   setStatus("Processing campfires…");
   for(const o in CFIRE){ const s=merged[CFIRE[o].src]; if(s){ const b=await pCampfireFrame(s,CFIRE[o].side); if(b){out.file(o,b);copied++;} } tick(); }
