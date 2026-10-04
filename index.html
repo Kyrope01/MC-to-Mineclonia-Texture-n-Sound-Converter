@@ -59,8 +59,8 @@
   .toggle.fmt{margin:-14px 0 16px;align-items:center}
   .fmt .fmtlbl{color:var(--muted);font-size:13px;font-weight:600}
   .fmt button{padding:6px 14px;font-size:12.5px}
-  .auto-default-btn{display:block;width:100%;margin:0 0 14px;padding:10px 14px;border:1px solid #5a5a64;border-radius:9px;background:var(--panel2);color:var(--text);font:inherit;font-weight:700;cursor:pointer}
-  .auto-default-btn:hover{border-color:var(--orange);color:var(--orange2)}
+  .default-download-link{display:block;width:100%;box-sizing:border-box;margin:0 0 14px;padding:10px 14px;border:1px solid #5a5a64;border-radius:9px;background:var(--panel2);color:var(--orange2);font:inherit;line-height:1.4;word-break:break-all;text-decoration:none;user-select:text}
+  .default-download-link:hover{border-color:var(--orange);color:var(--text)}
 </style>
 </head>
 <body>
@@ -76,7 +76,7 @@
     <button id="fmtPatch" type="button">Game-files patch</button>
   </div>
   <div class="card">
-    <button class="auto-default-btn" id="defaultBtn" type="button">Auto-download default Minecraft textures</button>
+    <a class="default-download-link" id="defaultDownloadLink" target="_blank" rel="noopener" href="#">Loading default Minecraft texture download link…</a>
     <label id="drop" for="file">
       <svg class="ico" viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -210,7 +210,9 @@ function applyTexts(){
     : patch
       ? "Overwrites stock sound files and wires per-block sounds into the game itself &middot; no mod to enable &middot; works in every world you open or host"
       : "Outputs a mod with unique per-block place/break/mine/footstep sounds &middot; enable per world";
-  $("defaultBtn").style.display = snd ? "none" : "block";
+  $("defaultDownloadLink").style.display = snd ? "none" : "block";
+  $("defaultDownloadLink").href = CURSEFORGE_DEFAULT_PACK.downloadUrls[0];
+  $("defaultDownloadLink").textContent = CURSEFORGE_DEFAULT_PACK.downloadUrls[0];
   $("nameLbl").textContent = snd
     ? "Name your mod (used as the mod folder + name in mod.conf)"
     : "Name your texture pack (used as the folder + pack name)";
@@ -1398,15 +1400,6 @@ $("mTex").addEventListener("click",()=>setMode("textures"));
 $("mSnd").addEventListener("click",()=>setMode("sounds"));
 $("fmtMod").addEventListener("click",()=>setFmt("mod"));
 $("fmtPatch").addEventListener("click",()=>setFmt("patch"));
-$("defaultBtn").addEventListener("click",()=>{
-  // Let the browser follow CurseForge's normal countdown/redirect flow. A
-  // cross-origin download cannot be read back into this page automatically;
-  // after it finishes, drop the ZIP into the converter below.
-  const a=document.createElement("a");
-  a.href=CURSEFORGE_DEFAULT_PACK.downloadUrls[0];
-  a.target="_blank"; a.rel="noopener"; a.click();
-  setStatus("CurseForge download started. When the ZIP finishes, drop it here to convert it.");
-});
 $("nameBtn").addEventListener("click",()=>{ finalize().catch(err=>{console.error(err);setStatus("<b style='color:#ff5a5a'>Error:</b> "+(err.message||err));}); });
 $("nameIn").addEventListener("keydown",ev=>{ if(ev.key==="Enter") $("nameBtn").click(); });
 $("dl").addEventListener("click",()=>{ if(!outBlob)return; const a=document.createElement("a"); a.href=URL.createObjectURL(outBlob); a.download=outName; a.click(); });
