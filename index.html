@@ -138,17 +138,35 @@ const EMBEDDED_MOB_TEXTURES = Object.freeze({
 });
 
 // These aliases cover the exact texture slots used by VoxeLibre's current
-// pig.lua, sheep.lua, and spider.lua. The renamed Rover and Stalker textures
-// are intentionally absent: their edited model textures are embedded above.
-// Arrays are tried in order so classic, legacy, and newer 1.21.x layouts work.
+// pig.lua, horse.lua, sheep.lua, spider.lua, and villager_zombie.lua. The
+// renamed Rover and Stalker textures are intentionally absent: their edited
+// model textures are embedded above. Arrays are tried in order so classic,
+// legacy, and newer 1.21.x layouts work.
 const VOXELIBRE_MOB_MAPPINGS = {
-  "mobs_mc_pig.png": ["entity/pig/pig.png", "entity/pig/temperate_pig.png", "entity/pig/warm_pig.png", "entity/pig/cold_pig.png", "entity/pig.png"],
+  "mobs_mc_pig.png": ["entity/pig/pig.png", "entity/pig/temperate_pig.png", "entity/pig/warm_pig.png", "entity/pig/cold_pig.png", "entity/pig/temperate.png", "entity/pig/warm.png", "entity/pig/cold.png", "entity/pig.png"],
   "mobs_mc_pig_saddle.png": ["entity/pig/pig_saddle.png", "entity/equipment/pig_saddle/saddle.png", "entity/pig/saddle.png", "entity/pig_saddle.png"],
   "mobs_mc_sheep.png": ["entity/sheep/sheep.png", "entity/sheep.png"],
   "mobs_mc_sheep_fur.png": ["entity/sheep/sheep_wool.png", "entity/sheep/sheep_fur.png", "entity/sheep/sheep_wool_undercoat.png", "entity/sheep_fur.png"],
   "mobs_mc_spider.png": ["entity/spider/spider.png", "entity/spider.png"],
   "mobs_mc_cave_spider.png": ["entity/spider/cave_spider.png", "entity/cave_spider.png"],
-  "mobs_mc_spider_eyes.png": ["entity/spider_eyes.png", "entity/spider/spider_eyes.png"]
+  "mobs_mc_spider_eyes.png": ["entity/spider_eyes.png", "entity/spider/spider_eyes.png"],
+  "mcl_mobitems_horse_armor_leather.png": ["entity/horse/armor/horse_armor_leather.png", "entity/equipment/horse_body/leather.png", "entity/horse/armor/leather.png"],
+  "mcl_mobitems_horse_armor_iron.png": ["entity/horse/armor/horse_armor_iron.png", "entity/equipment/horse_body/iron.png", "entity/horse/armor/iron.png"],
+  "mcl_mobitems_horse_armor_gold.png": ["entity/horse/armor/horse_armor_gold.png", "entity/equipment/horse_body/gold.png", "entity/horse/armor/gold.png"],
+  "mcl_mobitems_horse_armor_diamond.png": ["entity/horse/armor/horse_armor_diamond.png", "entity/equipment/horse_body/diamond.png", "entity/horse/armor/diamond.png"],
+  "mobs_mc_zombie_villager.png": ["entity/zombie_villager/zombie_villager.png", "entity/zombie_villager.png"]
+};
+
+// Minecraft stores zombie-villager profession clothing as transparent
+// overlays. VoxeLibre's six mob texture slots are complete 64x64 images, so
+// compose the base skin and profession overlay before writing the output.
+const ZOMBIE_VILLAGER_BASE = ["entity/zombie_villager/zombie_villager.png", "entity/zombie_villager.png"];
+const ZOMBIE_VILLAGER_PROFESSIONS = {
+  "mobs_mc_zombie_butcher.png": ["entity/zombie_villager/profession/butcher.png", "entity/zombie_villager/profession/leatherworker.png"],
+  "mobs_mc_zombie_farmer.png": ["entity/zombie_villager/profession/farmer.png", "entity/zombie_villager/profession/fisherman.png", "entity/zombie_villager/profession/fletcher.png", "entity/zombie_villager/profession/shepherd.png"],
+  "mobs_mc_zombie_librarian.png": ["entity/zombie_villager/profession/librarian.png", "entity/zombie_villager/profession/cartographer.png"],
+  "mobs_mc_zombie_priest.png": ["entity/zombie_villager/profession/cleric.png"],
+  "mobs_mc_zombie_smith.png": ["entity/zombie_villager/profession/armorer.png", "entity/zombie_villager/profession/toolsmith.png", "entity/zombie_villager/profession/weaponsmith.png", "entity/zombie_villager/profession/mason.png"]
 };
 
 // DATA.mappings values may be a source-path fallback list. This is used for
@@ -275,6 +293,33 @@ function embeddedPngToU8(dataUrl){
   const out=new Uint8Array(raw.length);
   for(let i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
   return out;
+}
+
+// VoxeLibre's horse B3D textures are 128x128. Modern Minecraft horse and
+// horse-armour assets are 64x64, so enlarge them with nearest-neighbour pixels
+// instead of letting the model sample a half-sized atlas.
+async function pNearestScale(u8,factor=2){
+  const img=await u8ToImage(u8); if(!img)return null;
+  const w=img.naturalWidth||img.width, h=img.naturalHeight||img.height;
+  if(w!==64 || h!==64)return u8;
+  const c=document.createElement("canvas"); c.width=w*factor; c.height=h*factor;
+  const ctx=c.getContext("2d"); ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(img,0,0,w,h,0,0,c.width,c.height);
+  return canvasToU8(c);
+}
+
+// Build complete zombie-villager textures from Minecraft's base skin plus its
+// transparent profession layer. Drawing in this order preserves the source
+// alpha and prevents the profession-only sheet from replacing the green skin.
+async function pCompositeTexture(baseU8,overlayU8){
+  const base=await u8ToImage(baseU8), overlay=await u8ToImage(overlayU8);
+  if(!base)return overlayU8;
+  if(!overlay)return baseU8;
+  const w=base.naturalWidth||base.width, h=base.naturalHeight||base.height;
+  const c=document.createElement("canvas"); c.width=w; c.height=h;
+  const ctx=c.getContext("2d"); ctx.imageSmoothingEnabled=false;
+  ctx.clearRect(0,0,w,h); ctx.drawImage(base,0,0,w,h); ctx.drawImage(overlay,0,0,w,h);
+  return canvasToU8(c);
 }
 
 async function pColor(u8,color){ const img=await u8ToImage(u8); if(!img)return null; const c=imgToCanvas(img),ctx=c.getContext('2d');
@@ -1306,11 +1351,24 @@ async function convertTextures(file){
       tick();
       continue;
     }
+    const zvCandidates=ZOMBIE_VILLAGER_PROFESSIONS[o];
+    if(zvCandidates){
+      const baseName=ZOMBIE_VILLAGER_BASE.find(name=>merged[name]);
+      const overlayName=zvCandidates.find(name=>merged[name]);
+      let bytes=null;
+      if(baseName && overlayName) bytes=await pCompositeTexture(merged[baseName],merged[overlayName]);
+      else if(baseName) bytes=merged[baseName];
+      if(bytes){ out.file(o,bytes); copied++; }
+      tick();
+      continue;
+    }
     const candidates=Array.isArray(MAP[o]) ? MAP[o] : [MAP[o]];
     const src=candidates.find(name=>merged[name]);
     if(src){
       let bytes=merged[src];
-      if(/^mobs_mc_(cow|pig|mooshroom)(?:_brown)?\.png$/.test(o))
+      if(/^mobs_mc_horse_/.test(o) || /^mcl_mobitems_horse_armor_/.test(o))
+        bytes=await pNearestScale(bytes,2);
+      if(/^mobs_mc_(cow|pig|mooshroom)(?:_brown)?\.png$/.test(o) || o==="mobs_mc_pig_saddle.png")
         bytes=await pClassicQuadrupedTexture(bytes);
       if(o==="mobs_mc_llama_spit.png") bytes=await pLlamaSpitTexture(bytes);
       if(o==="mobs_mc_shulkerbullet.png") bytes=await pShulkerBulletTexture(bytes);
